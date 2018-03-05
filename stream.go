@@ -110,7 +110,7 @@ func main() {
 				collection.Append(e)
 			}
 
-			// Update cursor pointer to resume operation in case connection gets lost
+			// Save cursor position to resume operation in case connection gets lost
 			collection.Cursor = horizon.Cursor(e.PT)
 		})
 
