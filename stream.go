@@ -41,10 +41,14 @@ func (c *Collection) Append(effect horizon.Effect) {
 	c.Effects = append(c.Effects, effect)
 }
 
+func (c *Collection) Count() int {
+	return len(c.Effects)
+}
+
 func init() {
 	// Load collection upon startup
 	if loadCollection() {
-		log.Printf("Resuming operation from cursor %s", collection.Cursor)
+		log.Printf("%d transactions loaded. Resuming operation from cursor %s", collection.Count(), collection.Cursor)
 	} else {
 		collection.Cursor = horizon.Cursor(GENESIS_CURSOR)
 		log.Printf("Retrieving data from blockchain beginning with cursor %s", collection.Cursor)
