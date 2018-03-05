@@ -25,13 +25,22 @@ type Collection struct {
 }
 
 // Aggregate amount of all entries with type t
-func (c *Collection) Total(t string) (total float64) {
+func (c *Collection) TotalAmount(t string) (total float64) {
 	for _, e := range c.Effects {
 		if e.Type == t {
 			amount, err := strconv.ParseFloat(e.Amount, 64)
 			if err == nil {
 				total += amount
 			}
+		}
+	}
+	return
+}
+
+func (c *Collection) TotalCount(t string) (count int) {
+	for _, e := range c.Effects {
+		if e.Type == t {
+			count += 1
 		}
 	}
 	return
@@ -91,10 +100,9 @@ func main() {
 	go func() {
 		ticker := time.NewTicker(time.Millisecond * 5000)
 		for _ = range ticker.C {
-			log.Printf("DEBUG: Total %s transferred: %f (Cursor: %s)",
-				ASSET_CODE,
-				collection.Total("account_credited"),
-				collection.Cursor)
+			log.Printf("DEBUG: Total %s transferred: %f", ASSET_CODE, collection.TotalAmount("account_credited"))
+			log.Printf("       Total trustlines created: %d", collection.TotalCount("trustline_created"))
+			log.Printf("       Cursor: %s", collection.Cursor)
 		}
 	}()
 
