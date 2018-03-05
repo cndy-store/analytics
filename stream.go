@@ -1,21 +1,25 @@
 package main
 
 import (
+	"encoding/gob"
 	"github.com/stellar/go/clients/horizon"
 	"golang.org/x/net/context"
 	"log"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
+	"time"
 )
-
-// TODO:
-// - Store effect entries in database or binary file
-// - Store PT and use it as cursor, so we can catch up from last time
 
 const ASSET_CODE = "CNDY"
 const GENESIS_CURSOR = "33170762571452437-1"
 
+var collection Collection
+
 type Collection struct {
 	Effects []horizon.Effect
+	Cursor  horizon.Cursor
 }
 
 // Aggregate amount of all entries with type t
@@ -35,15 +39,50 @@ func (c *Collection) Append(effect horizon.Effect) {
 	c.Effects = append(c.Effects, effect)
 }
 
+func init() {
+	// Load collection upon startup
+	if loadCollection() {
+		log.Printf("Resuming operation from cursor %s", collection.Cursor)
+	} else {
+		collection.Cursor = horizon.Cursor(GENESIS_CURSOR)
+		log.Printf("Retrieving data from blockchain beginning with cursor %s", collection.Cursor)
+	}
+
+	// Intercept signals
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
+	// Save collection on exit
+	go func() {
+		signal := <-signalChannel
+		log.Printf("Received signal: %v\n", signal)
+		log.Printf("Saving collection at cursor %s", collection.Cursor)
+		saveCollection()
+		os.Exit(0)
+	}()
+}
+
 func main() {
 	client := horizon.DefaultTestNetClient
-	cursor := horizon.Cursor(GENESIS_CURSOR)
 	ctx := context.Background() // Stream indefinitly
 
-	var collection Collection
+	// Go subroutine to periodically print status
+	go func() {
+		ticker := time.NewTicker(time.Millisecond * 5000)
+		for _ = range ticker.C {
+			log.Printf("DEBUG: Total %s transferred: %f (Cursor: %s)",
+				ASSET_CODE,
+				collection.Total("account_credited"),
+				collection.Cursor)
+		}
+	}()
 
 	for {
-		err := client.StreamEffects(ctx, &cursor, func(e horizon.Effect) {
+		err := client.StreamEffects(ctx, &collection.Cursor, func(e horizon.Effect) {
 			if e.Asset.Code == ASSET_CODE {
 				log.Printf("--+--[ %s ]", e.Asset.Code)
 				log.Printf("  |")
@@ -55,12 +94,39 @@ func main() {
 				collection.Append(e)
 			}
 
-			log.Printf("DEBUG: Total %s transferred: %f", ASSET_CODE, collection.Total("account_credited"))
-			log.Printf("DEBUG: Current cursor: %s", e.PT)
+			// Update cursor pointer to resume operation in case connection gets lost
+			collection.Cursor = horizon.Cursor(e.PT)
 		})
 
 		if err != nil {
 			log.Print(err)
 		}
 	}
+}
+
+// Save current collection to file
+func saveCollection() {
+	f, err := os.Create("collection.save")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	enc := gob.NewEncoder(f)
+	enc.Encode(collection)
+	f.Close()
+}
+
+// Load saved collection from file
+func loadCollection() bool {
+	f, err := os.Open("collection.save")
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	dec := gob.NewDecoder(f)
+	dec.Decode(&collection)
+	f.Close()
+	return true
 }
