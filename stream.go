@@ -12,7 +12,9 @@ import (
 	"time"
 )
 
+// Our asset code to watch and the cursor to when the asset was first introduced
 const ASSET_CODE = "CNDY"
+const ASSET_ISSUER = "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU"
 const GENESIS_CURSOR = "33170762571452437-1"
 
 var collection Collection
@@ -83,12 +85,11 @@ func main() {
 
 	for {
 		err := client.StreamEffects(ctx, &collection.Cursor, func(e horizon.Effect) {
-			if e.Asset.Code == ASSET_CODE {
+			if e.Asset.Code == ASSET_CODE && e.Asset.Issuer == ASSET_ISSUER {
 				log.Printf("--+--[ %s ]", e.Asset.Code)
 				log.Printf("  |")
-				log.Printf("  +->  Account: %s", e.Account)
-				log.Printf("  +->  Issuer:  %s", e.Asset.Issuer)
 				log.Printf("  +->  Type:    %s", e.Type)
+				log.Printf("  +->  Account: %s", e.Account)
 				log.Printf("  +->  Amount:  %s\n\n", e.Amount)
 
 				collection.Append(e)
