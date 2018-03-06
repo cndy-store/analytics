@@ -161,7 +161,7 @@ func main() {
 		})
 
 		if err != nil {
-			log.Print(err)
+			log.Printf("INFO: %s", err)
 		}
 	}
 }
