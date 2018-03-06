@@ -14,25 +14,6 @@ import (
 	"time"
 )
 
-// This struct is taken from the internal package github.com/stellar/go/services/horizon/internal/resource/operations"
-type Operation struct {
-	Links struct {
-		Self        horizon.Link `json:"self"`
-		Transaction horizon.Link `json:"transaction"`
-		Effects     horizon.Link `json:"effects"`
-		Succeeds    horizon.Link `json:"succeeds"`
-		Precedes    horizon.Link `json:"precedes"`
-	} `json:"_links"`
-
-	ID              string    `json:"id"`
-	PT              string    `json:"paging_token"`
-	SourceAccount   string    `json:"source_account"`
-	Type            string    `json:"type"`
-	TypeI           int32     `json:"type_i"`
-	LedgerCloseTime time.Time `json:"created_at"`
-	TransactionHash string    `json:"transaction_hash"`
-}
-
 // Our asset code to watch and the cursor to when the asset was first introduced
 const ASSET_CODE = "CNDY"
 const ASSET_ISSUER = "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU"
@@ -169,26 +150,9 @@ func main() {
 				log.Printf("  +->  Account: %s", e.Account)
 				log.Printf("  +->  Amount:  %s\n\n", e.Amount)
 
-				// Try getting operation via GET request
-				var myClient = &http.Client{Timeout: 2 * time.Second}
-
-				r, err := myClient.Get(e.Links.Operation.Href)
-				if err != nil {
-					log.Printf("GET Error: %s", err)
-				}
-				defer r.Body.Close()
-
-				operation := Operation{}
-				err = json.NewDecoder(r.Body).Decode(&operation)
-				if err != nil {
-					log.Printf("Couldn't decode body: %s", err)
-				}
-
-				log.Printf("DEBUG: %+v", operation.LedgerCloseTime)
-
 				col.Append(Item{
 					Effect:          e,
-					LedgerCloseTime: operation.LedgerCloseTime,
+					LedgerCloseTime: GetOperationTime(e.Links.Operation.Href),
 				})
 			}
 
@@ -200,4 +164,47 @@ func main() {
 			log.Print(err)
 		}
 	}
+}
+
+// This struct is taken from the internal package github.com/stellar/go/services/horizon/internal/resource/operations"
+type Operation struct {
+	Links struct {
+		Self        horizon.Link `json:"self"`
+		Transaction horizon.Link `json:"transaction"`
+		Effects     horizon.Link `json:"effects"`
+		Succeeds    horizon.Link `json:"succeeds"`
+		Precedes    horizon.Link `json:"precedes"`
+	} `json:"_links"`
+
+	ID              string    `json:"id"`
+	PT              string    `json:"paging_token"`
+	SourceAccount   string    `json:"source_account"`
+	Type            string    `json:"type"`
+	TypeI           int32     `json:"type_i"`
+	LedgerCloseTime time.Time `json:"created_at"`
+	TransactionHash string    `json:"transaction_hash"`
+}
+
+func GetOperationTime(url string) (t time.Time) {
+	var h = &http.Client{Timeout: 2 * time.Second}
+
+	log.Printf("DEBUG: GET %s", url)
+
+	r, err := h.Get(url)
+	if err != nil {
+		log.Printf("GET Error: %s", err)
+		return
+	}
+	defer r.Body.Close()
+
+	operation := Operation{}
+	err = json.NewDecoder(r.Body).Decode(&operation)
+	if err != nil {
+		log.Printf("Couldn't decode body: %s", err)
+		return
+	}
+
+	t = operation.LedgerCloseTime
+	log.Printf("       %+v", t)
+	return
 }
