@@ -2,15 +2,36 @@ package main
 
 import (
 	"encoding/gob"
+	"encoding/json"
 	"github.com/stellar/go/clients/horizon"
 	"golang.org/x/net/context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 	"time"
 )
+
+// This struct is taken from the internal package github.com/stellar/go/services/horizon/internal/resource/operations"
+type Operation struct {
+	Links struct {
+		Self        horizon.Link `json:"self"`
+		Transaction horizon.Link `json:"transaction"`
+		Effects     horizon.Link `json:"effects"`
+		Succeeds    horizon.Link `json:"succeeds"`
+		Precedes    horizon.Link `json:"precedes"`
+	} `json:"_links"`
+
+	ID              string    `json:"id"`
+	PT              string    `json:"paging_token"`
+	SourceAccount   string    `json:"source_account"`
+	Type            string    `json:"type"`
+	TypeI           int32     `json:"type_i"`
+	LedgerCloseTime time.Time `json:"created_at"`
+	TransactionHash string    `json:"transaction_hash"`
+}
 
 // Our asset code to watch and the cursor to when the asset was first introduced
 const ASSET_CODE = "CNDY"
@@ -19,16 +40,21 @@ const GENESIS_CURSOR = "33170762571452437-1"
 
 var collection Collection
 
+type EffectWithTime struct {
+	Effect          horizon.Effect
+	LedgerCloseTime time.Time
+}
+
 type Collection struct {
-	Effects []horizon.Effect
+	Effects []EffectWithTime
 	Cursor  horizon.Cursor
 }
 
 // Aggregate amount of all entries with type t
 func (c *Collection) TotalAmount(t string) (total float64) {
 	for _, e := range c.Effects {
-		if e.Type == t {
-			amount, err := strconv.ParseFloat(e.Amount, 64)
+		if e.Effect.Type == t {
+			amount, err := strconv.ParseFloat(e.Effect.Amount, 64)
 			if err == nil {
 				total += amount
 			}
@@ -39,14 +65,14 @@ func (c *Collection) TotalAmount(t string) (total float64) {
 
 func (c *Collection) TotalCount(t string) (count int) {
 	for _, e := range c.Effects {
-		if e.Type == t {
+		if e.Effect.Type == t {
 			count += 1
 		}
 	}
 	return
 }
 
-func (c *Collection) Append(effect horizon.Effect) {
+func (c *Collection) Append(effect EffectWithTime) {
 	c.Effects = append(c.Effects, effect)
 }
 
@@ -54,7 +80,7 @@ func (c *Collection) AccountCount() int {
 	accounts := make(map[string]struct{})
 
 	for _, e := range c.Effects {
-		accounts[e.Account] = struct{}{}
+		accounts[e.Effect.Account] = struct{}{}
 	}
 
 	return len(accounts)
@@ -115,7 +141,29 @@ func main() {
 				log.Printf("  +->  Account: %s", e.Account)
 				log.Printf("  +->  Amount:  %s\n\n", e.Amount)
 
-				collection.Append(e)
+				// Try getting operation via GET request
+				var myClient = &http.Client{Timeout: 2 * time.Second}
+
+				r, err := myClient.Get(e.Links.Operation.Href)
+				if err != nil {
+					log.Printf("GET Error: %s", err)
+				}
+				defer r.Body.Close()
+
+				operation := Operation{}
+				err = json.NewDecoder(r.Body).Decode(&operation)
+				if err != nil {
+					log.Printf("Couldn't decode body: %s", err)
+				}
+
+				log.Printf("DEBUG: %+v", operation.LedgerCloseTime)
+
+				newEffect := EffectWithTime{
+					Effect:          e,
+					LedgerCloseTime: operation.LedgerCloseTime,
+				}
+
+				collection.Append(newEffect)
 			}
 
 			// Save cursor position to resume operation in case connection gets lost
