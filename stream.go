@@ -38,23 +38,48 @@ const ASSET_CODE = "CNDY"
 const ASSET_ISSUER = "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU"
 const GENESIS_CURSOR = "33170762571452437-1"
 
-var collection Collection
+type Collection struct {
+	Items  []Item
+	Cursor horizon.Cursor
+}
 
-type EffectWithTime struct {
+type Item struct {
 	Effect          horizon.Effect
 	LedgerCloseTime time.Time
 }
 
-type Collection struct {
-	Effects []EffectWithTime
-	Cursor  horizon.Cursor
+// Save current collection to file
+func (c *Collection) Save() {
+	f, err := os.Create("collection.save")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	enc := gob.NewEncoder(f)
+	enc.Encode(c)
+	f.Close()
+}
+
+// Load saved collection from file
+func (c *Collection) Load() bool {
+	f, err := os.Open("collection.save")
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	dec := gob.NewDecoder(f)
+	dec.Decode(&c)
+	f.Close()
+	return true
 }
 
 // Aggregate amount of all entries with type t
 func (c *Collection) TotalAmount(t string) (total float64) {
-	for _, e := range c.Effects {
-		if e.Effect.Type == t {
-			amount, err := strconv.ParseFloat(e.Effect.Amount, 64)
+	for _, i := range c.Items {
+		if i.Effect.Type == t {
+			amount, err := strconv.ParseFloat(i.Effect.Amount, 64)
 			if err == nil {
 				total += amount
 			}
@@ -64,40 +89,43 @@ func (c *Collection) TotalAmount(t string) (total float64) {
 }
 
 func (c *Collection) TotalCount(t string) (count int) {
-	for _, e := range c.Effects {
-		if e.Effect.Type == t {
+	for _, i := range c.Items {
+		if i.Effect.Type == t {
 			count += 1
 		}
 	}
 	return
 }
 
-func (c *Collection) Append(effect EffectWithTime) {
-	c.Effects = append(c.Effects, effect)
+func (c *Collection) Append(effect Item) {
+	c.Items = append(c.Items, effect)
 }
 
 func (c *Collection) AccountCount() int {
 	accounts := make(map[string]struct{})
 
-	for _, e := range c.Effects {
-		accounts[e.Effect.Account] = struct{}{}
+	for _, i := range c.Items {
+		accounts[i.Effect.Account] = struct{}{}
 	}
 
 	return len(accounts)
 }
 
-func (c *Collection) TxCount() int {
-	return len(c.Effects)
+func (c *Collection) ItemCount() int {
+	return len(c.Items)
 }
 
+var col Collection
+
 func init() {
+
 	// Load collection upon startup
-	if loadCollection() {
+	if col.Load() {
 		log.Printf("%d transactions of %d accounts loaded. Resuming operation from cursor %s",
-			collection.TxCount(), collection.AccountCount(), collection.Cursor)
+			col.ItemCount(), col.AccountCount(), col.Cursor)
 	} else {
-		collection.Cursor = horizon.Cursor(GENESIS_CURSOR)
-		log.Printf("Retrieving data from blockchain beginning with cursor %s", collection.Cursor)
+		col.Cursor = horizon.Cursor(GENESIS_CURSOR)
+		log.Printf("Retrieving data from blockchain beginning with cursor %s", col.Cursor)
 	}
 
 	// Intercept signals
@@ -112,8 +140,8 @@ func init() {
 	go func() {
 		signal := <-signalChannel
 		log.Printf("Received signal: %v\n", signal)
-		log.Printf("Saving collection at cursor %s", collection.Cursor)
-		saveCollection()
+		log.Printf("Saving collection at cursor %s", col.Cursor)
+		col.Save()
 		os.Exit(0)
 	}()
 }
@@ -126,14 +154,14 @@ func main() {
 	go func() {
 		ticker := time.NewTicker(time.Millisecond * 5000)
 		for _ = range ticker.C {
-			log.Printf("DEBUG: Total %s transferred: %f", ASSET_CODE, collection.TotalAmount("account_credited"))
-			log.Printf("       Total trustlines created: %d", collection.TotalCount("trustline_created"))
-			log.Printf("       Cursor: %s", collection.Cursor)
+			log.Printf("DEBUG: Total %s transferred: %f", ASSET_CODE, col.TotalAmount("account_credited"))
+			log.Printf("       Total trustlines created: %d", col.TotalCount("trustline_created"))
+			log.Printf("       Cursor: %s", col.Cursor)
 		}
 	}()
 
 	for {
-		err := client.StreamEffects(ctx, &collection.Cursor, func(e horizon.Effect) {
+		err := client.StreamEffects(ctx, &col.Cursor, func(e horizon.Effect) {
 			if e.Asset.Code == ASSET_CODE && e.Asset.Issuer == ASSET_ISSUER {
 				log.Printf("--+--[ %s ]", e.Asset.Code)
 				log.Printf("  |")
@@ -158,47 +186,18 @@ func main() {
 
 				log.Printf("DEBUG: %+v", operation.LedgerCloseTime)
 
-				newEffect := EffectWithTime{
+				col.Append(Item{
 					Effect:          e,
 					LedgerCloseTime: operation.LedgerCloseTime,
-				}
-
-				collection.Append(newEffect)
+				})
 			}
 
-			// Save cursor position to resume operation in case connection gets lost
-			collection.Cursor = horizon.Cursor(e.PT)
+			// Save cursor position to resume operation in case connection drops
+			col.Cursor = horizon.Cursor(e.PT)
 		})
 
 		if err != nil {
 			log.Print(err)
 		}
 	}
-}
-
-// Save current collection to file
-func saveCollection() {
-	f, err := os.Create("collection.save")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	enc := gob.NewEncoder(f)
-	enc.Encode(collection)
-	f.Close()
-}
-
-// Load saved collection from file
-func loadCollection() bool {
-	f, err := os.Open("collection.save")
-	if err != nil {
-		return false
-	}
-	defer f.Close()
-
-	dec := gob.NewDecoder(f)
-	dec.Decode(&collection)
-	f.Close()
-	return true
 }
