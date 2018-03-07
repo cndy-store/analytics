@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/gob"
 	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"github.com/stellar/go/clients/horizon"
 	"golang.org/x/net/context"
 	"log"
@@ -20,13 +21,13 @@ const ASSET_ISSUER = "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU"
 const GENESIS_CURSOR = "33170762571452437-1"
 
 type Collection struct {
-	Items  []Item
-	Cursor horizon.Cursor
+	Items  []Item         `json:"transactions"`
+	Cursor horizon.Cursor `json:"cursor"`
 }
 
 type Item struct {
-	Effect          horizon.Effect
-	LedgerCloseTime time.Time
+	Effect          horizon.Effect `json:"effect"`
+	LedgerCloseTime time.Time      `json:"created_at"`
 }
 
 // Save current collection to file
@@ -109,6 +110,9 @@ func init() {
 		log.Printf("Retrieving data from blockchain beginning with cursor %s", col.Cursor)
 	}
 
+	// Start routine for API
+	go api()
+
 	// Intercept signals
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,
@@ -152,7 +156,7 @@ func main() {
 
 				col.Append(Item{
 					Effect:          e,
-					LedgerCloseTime: GetOperationTime(e.Links.Operation.Href),
+					LedgerCloseTime: getOperationTime(e.Links.Operation.Href),
 				})
 			}
 
@@ -185,7 +189,7 @@ type Operation struct {
 	TransactionHash string    `json:"transaction_hash"`
 }
 
-func GetOperationTime(url string) (t time.Time) {
+func getOperationTime(url string) (t time.Time) {
 	var h = &http.Client{Timeout: 2 * time.Second}
 
 	log.Printf("DEBUG: GET %s", url)
@@ -207,4 +211,28 @@ func GetOperationTime(url string) (t time.Time) {
 	t = operation.LedgerCloseTime
 	log.Printf("       %+v", t)
 	return
+}
+
+func api() {
+	router := gin.Default()
+
+	router.GET("/api/cndy", func(c *gin.Context) {
+		// if err != nil {
+		// 	log.Printf("ERROR: %s", err)
+		// 	c.String(http.StatusInternalServerError, "")
+		// 	return
+		// }
+
+		c.JSON(http.StatusOK, gin.H{
+			"tx_count":                 col.ItemCount(),
+			"accounts":                 col.AccountCount(),
+			"total_amount_transferred": col.TotalAmount("account_credited"),
+			"trustlines_created":       col.TotalCount("trustline_created"),
+			"current_cursor":           col.Cursor,
+			// "transactions":       col.Items,
+		})
+		return
+	})
+
+	router.Run(":8080")
 }
