@@ -5,7 +5,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stellar/go/clients/horizon"
 	"log"
-	"time"
 )
 
 // Genesis cursor when the asset was introduced
@@ -14,9 +13,8 @@ const GENESIS_CURSOR = "33170762571452437-1"
 var ErrNotFound = errors.New("Cursor not found")
 
 type Cursor struct {
-	Id          *uint32    `db:"id",          json:"-"`
-	PagingToken *string    `db:"paging_token" json:"paging_token,omitempty"`
-	CreatedAt   *time.Time `db:"created_at"   json:"created_at,omitempty"`
+	Id          *uint32 `db:"id",          json:"-"`
+	PagingToken *string `db:"paging_token" json:"paging_token,omitempty"`
 }
 
 func New(db *sqlx.DB, cursor string) (err error) {
