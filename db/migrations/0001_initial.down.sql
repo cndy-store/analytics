@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS cursors;
+DROP TABLE IF EXISTS effects;
