@@ -39,12 +39,21 @@ type Effect struct {
 }
 
 func New(db *sqlx.DB, effect horizon.Effect) (err error) {
+	// Get timestamp from operation
+	timestamp := getOperationTime(effect.Links.Operation.Href)
+
 	// Just input the fields we're requiring for now, can be replayed anytime form the chain later.
 	_, err = db.Exec(`INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, starting_balance, balance, balance_limit, asset_type, asset_issuer, asset_code, created_at)
 	                  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
 		effect.ID, effect.Links.Operation.Href, effect.PT, effect.Account, effect.Amount, effect.Type, effect.StartingBalance, effect.Balance.Balance, effect.Balance.Limit,
-		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code,
-		getOperationTime(effect.Links.Operation.Href))
+		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code, timestamp)
+
+	log.Printf("--+--[ %s ]", effect.Asset.Code)
+	log.Printf("  |")
+	log.Printf("  +->  Type:      %s", effect.Type)
+	log.Printf("  +->  Account:   %s", effect.Account)
+	log.Printf("  +->  Amount:    %s", effect.Amount)
+	log.Printf("  +->  Timestamp: %s\n\n", timestamp)
 	return
 }
 
