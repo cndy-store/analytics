@@ -26,10 +26,8 @@ func main() {
 		log.Fatal("Fatal error opening database: ", err)
 	}
 
+	// Start API in go subroutine
 	go api(db)
-
-	client := horizon.DefaultTestNetClient
-	ctx := context.Background() // Stream indefinitly
 
 	// Go subroutine to periodically print status
 	go func() {
@@ -40,6 +38,9 @@ func main() {
 			log.Printf("       Cursor: %s", cursor.GetLatest(db))
 		}
 	}()
+
+	client := horizon.DefaultTestNetClient
+	ctx := context.Background() // Stream indefinitly
 
 	for {
 		currentCursor := cursor.GetLatest(db)
