@@ -76,6 +76,7 @@ func api(db *sqlx.DB) {
 			"accounts_involved":  effect.AccountCount(db, effect.Filter{From: from, To: to}),
 			"amount_transferred": effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to}),
 			"trustlines_created": effect.TotalCount(db, effect.Filter{Type: "trustline_created", From: from, To: to}),
+			"amount_issued":      effect.TotalIssued(db, ASSET_ISSUER, effect.Filter{From: from, To: to}),
 			"current_cursor":     cursor.GetLatest(db),
 		})
 		return

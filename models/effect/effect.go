@@ -92,6 +92,17 @@ func TotalAmount(db *sqlx.DB, filter Filter) (amount float64) {
 	return
 }
 
+// Total assets issued
+func TotalIssued(db *sqlx.DB, issuer string, filter Filter) (amount float64) {
+	filter.Defaults()
+	err := db.Get(&amount, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+		issuer, filter.From.Unix(), filter.To.Unix())
+	if err != nil {
+		log.Print(err)
+	}
+	return
+}
+
 func TotalCount(db *sqlx.DB, filter Filter) (count int) {
 	filter.Defaults()
 	if filter.Type == "" {

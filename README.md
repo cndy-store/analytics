@@ -27,6 +27,7 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 ```json
 {
   "accounts_involved": 3,
+  "amount_issued": 1108,
   "amount_transferred": 2119,
   "asset_code": "CNDY",
   "current_cursor": "33592975036518402-2",
