@@ -2,9 +2,17 @@
 
 Dependency management is done via [Glide](https://glide.sh).
 
+Build natively:
+
 ```bash
 glide install
 go build
+```
+
+Cross compile for Linux with [Docker](https://docker.com/):
+
+```bash
+docker-compose up
 ```
 
 

@@ -1,0 +1,7 @@
+version: '3'
+services:
+  cndy-analytics:
+    build: ./
+    image: chr4/cndy-analytics
+    volumes:
+      - ./:/go/src/github.com/chr4/cndy-analytics
