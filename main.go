@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"github.com/chr4/cndy-analytics/models/cursor"
 	"github.com/chr4/cndy-analytics/models/effect"
 	"github.com/gin-gonic/gin"
@@ -33,8 +34,8 @@ func main() {
 	go func() {
 		ticker := time.NewTicker(time.Millisecond * 5000)
 		for _ = range ticker.C {
-			log.Printf("DEBUG: Total %s transferred: %f", ASSET_CODE, effect.TotalAmount(db, "account_credited"))
-			log.Printf("       Total trustlines created: %d", effect.TotalCount(db, "trustline_created"))
+			log.Printf("DEBUG: Total %s transferred: %f", ASSET_CODE, effect.TotalAmount(db, effect.Filter{Type: "account_credited"}))
+			log.Printf("       Total trustlines created: %d", effect.TotalCount(db, effect.Filter{Type: "trustline_created"}))
 			log.Printf("       Cursor: %s", cursor.GetLatest(db))
 		}
 	}()
@@ -67,21 +68,42 @@ func main() {
 func api(db *sqlx.DB) {
 	router := gin.Default()
 
-	// TODO: From-until
+	// GET /api/cndy/stats[?from=XXX&to=XXX]
 	router.GET("/api/cndy/stats", func(c *gin.Context) {
+		from, to, err := getFromAndTo(c)
+		if err != nil {
+			log.Printf("ERROR: %s", err)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  "error",
+				"message": err.Error(),
+			})
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"asset_code":         ASSET_CODE,
-			"tx_count":           effect.ItemCount(db),
-			"accounts_involved":  effect.AccountCount(db),
-			"amount_transferred": effect.TotalAmount(db, "account_credited"),
-			"trustlines_created": effect.TotalCount(db, "trustline_created"),
+			"tx_count":           effect.ItemCount(db, effect.Filter{From: from, To: to}),
+			"accounts_involved":  effect.AccountCount(db, effect.Filter{From: from, To: to}),
+			"amount_transferred": effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to}),
+			"trustlines_created": effect.TotalCount(db, effect.Filter{Type: "trustline_created", From: from, To: to}),
 			"current_cursor":     cursor.GetLatest(db),
 		})
 		return
 	})
 
+	// GET /api/cndy/transactions[?from=XXX&to=XXX]
 	router.GET("/api/cndy/transactions", func(c *gin.Context) {
-		effects, err := effect.GetAll(db)
+		from, to, err := getFromAndTo(c)
+		if err != nil {
+			log.Printf("ERROR: %s", err)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  "error",
+				"message": err.Error(),
+			})
+			return
+		}
+
+		effects, err := effect.GetAll(db, effect.Filter{From: from, To: to})
 		if err != nil {
 			log.Printf("ERROR: %s", err)
 			c.String(http.StatusInternalServerError, "")
@@ -117,6 +139,28 @@ func initdb(uri string) (db *sqlx.DB, err error) {
 	err = m.Up()
 	if err == migrate.ErrNoChange {
 		err = nil
+	}
+
+	return
+}
+
+func getFromAndTo(c *gin.Context) (from *time.Time, to *time.Time, err error) {
+	if query := c.Query("from"); query != "" {
+		t, e := time.Parse(time.RFC3339, query)
+		if e != nil {
+			err = errors.New("Invalid date in 'from' parameter.")
+			return
+		}
+		from = &t
+	}
+
+	if query := c.Query("to"); query != "" {
+		t, e := time.Parse(time.RFC3339, query)
+		if e != nil {
+			err = errors.New("Invalid date in 'to' parameter.")
+			return
+		}
+		to = &t
 	}
 
 	return

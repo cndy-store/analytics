@@ -57,32 +57,70 @@ func New(db *sqlx.DB, effect horizon.Effect) (err error) {
 	return
 }
 
-func TotalAmount(db *sqlx.DB, t string) (amount float64) {
-	err := db.Get(&amount, `SELECT SUM(amount) FROM effects WHERE type=$1`, t)
+type Filter struct {
+	Type string
+	From *time.Time
+	To   *time.Time
+}
+
+func (f *Filter) Defaults() {
+	if f.From == nil {
+		t := time.Unix(0, 0)
+		f.From = &t
+	}
+
+	if f.To == nil {
+		t := time.Now()
+		f.To = &t
+	}
+}
+
+func TotalAmount(db *sqlx.DB, filter Filter) (amount float64) {
+	filter.Defaults()
+	if filter.Type == "" {
+		log.Printf("Error: TotalAmount(): No type given.")
+		return
+	}
+
+	// NOTE: SQLite doesn't have real date types, instead they are represented as strings. The
+	//       workaround with strftime() can be removed when using e.g. PostgreSQL
+	err := db.Get(&amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+		filter.Type, filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Print(err)
 	}
 	return
 }
 
-func TotalCount(db *sqlx.DB, t string) (count int) {
-	err := db.Get(&count, `SELECT COUNT(amount) FROM effects WHERE type=$1`, t)
+func TotalCount(db *sqlx.DB, filter Filter) (count int) {
+	filter.Defaults()
+	if filter.Type == "" {
+		log.Printf("Error: TotalCount(): No type given.")
+		return
+	}
+
+	err := db.Get(&count, `SELECT COUNT(*) FROM effects WHERE type=$1 AND cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+		filter.Type, filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Print(err)
 	}
 	return
 }
 
-func AccountCount(db *sqlx.DB) (count int) {
-	err := db.Get(&count, `SELECT COUNT(DISTINCT account) FROM effects`)
+func AccountCount(db *sqlx.DB, filter Filter) (count int) {
+	filter.Defaults()
+	err := db.Get(&count, `SELECT COUNT(DISTINCT account) FROM effects WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+		filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Print(err)
 	}
 	return
 }
 
-func ItemCount(db *sqlx.DB) (count int) {
-	err := db.Get(&count, `SELECT COUNT(*) FROM effects`)
+func ItemCount(db *sqlx.DB, filter Filter) (count int) {
+	filter.Defaults()
+	err := db.Get(&count, `SELECT COUNT(*) FROM effects WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+		filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Print(err)
 	}
@@ -90,8 +128,10 @@ func ItemCount(db *sqlx.DB) (count int) {
 }
 
 // GetAllForEvent returns all available contribution_types, marking those active for a specific event
-func GetAll(db *sqlx.DB) (effects []Effect, err error) {
-	err = db.Select(&effects, `SELECT * FROM effects`)
+func GetAll(db *sqlx.DB, filter Filter) (effects []Effect, err error) {
+	filter.Defaults()
+	err = db.Select(&effects, `SELECT * FROM effects WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+		filter.From.Unix(), filter.To.Unix())
 	if err == sql.ErrNoRows {
 		log.Print(err)
 	}
