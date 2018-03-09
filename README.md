@@ -20,7 +20,7 @@ docker-compose up
 
 ## Stats
 
-GET localhost:8080/api/cndy/stats[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
+GET http://api.cndy.store:3144/stats[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
 
 If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
@@ -37,7 +37,7 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
 ## Effects
 
-GET localhost:8080/api/cndy/effects[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
+GET http://api.cndy.store:3144/effects[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
 
 If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 

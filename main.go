@@ -58,8 +58,8 @@ func main() {
 func api(db *sqlx.DB) {
 	router := gin.Default()
 
-	// GET /api/cndy/stats[?from=XXX&to=XXX]
-	router.GET("/api/cndy/stats", func(c *gin.Context) {
+	// GET /cndy/stats[?from=XXX&to=XXX]
+	router.GET("/stats", func(c *gin.Context) {
 		from, to, err := getFromAndTo(c)
 		if err != nil {
 			log.Printf("ERROR: %s", err)
@@ -81,8 +81,8 @@ func api(db *sqlx.DB) {
 		return
 	})
 
-	// GET /api/cndy/effects[?from=XXX&to=XXX]
-	router.GET("/api/cndy/effects", func(c *gin.Context) {
+	// GET /effects[?from=XXX&to=XXX]
+	router.GET("/effects", func(c *gin.Context) {
 		from, to, err := getFromAndTo(c)
 		if err != nil {
 			log.Printf("ERROR: %s", err)
@@ -106,7 +106,7 @@ func api(db *sqlx.DB) {
 		return
 	})
 
-	router.Run(":8080")
+	router.Run(":3144")
 }
 
 // Open database and run migrations
