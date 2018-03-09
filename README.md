@@ -31,19 +31,19 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
   "asset_code": "CNDY",
   "current_cursor": "33592975036518402-2",
   "trustlines_created": 1,
-  "tx_count": 25
+  "effect_count": 25
 }
 ```
 
-## Transactions
+## Effects
 
-GET localhost:8080/api/cndy/transactions[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
+GET localhost:8080/api/cndy/effects[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
 
 If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
 ```json
 {
-  "transactions": [
+  "effects": [
     {
       "id": "0033170775456358401-0000000001",
       "operation": "https://horizon-testnet.stellar.org/operations/33170775456358401",

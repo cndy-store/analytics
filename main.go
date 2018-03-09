@@ -72,7 +72,7 @@ func api(db *sqlx.DB) {
 
 		c.JSON(http.StatusOK, gin.H{
 			"asset_code":         ASSET_CODE,
-			"tx_count":           effect.ItemCount(db, effect.Filter{From: from, To: to}),
+			"effect_count":       effect.ItemCount(db, effect.Filter{From: from, To: to}),
 			"accounts_involved":  effect.AccountCount(db, effect.Filter{From: from, To: to}),
 			"amount_transferred": effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to}),
 			"trustlines_created": effect.TotalCount(db, effect.Filter{Type: "trustline_created", From: from, To: to}),
@@ -81,8 +81,8 @@ func api(db *sqlx.DB) {
 		return
 	})
 
-	// GET /api/cndy/transactions[?from=XXX&to=XXX]
-	router.GET("/api/cndy/transactions", func(c *gin.Context) {
+	// GET /api/cndy/effects[?from=XXX&to=XXX]
+	router.GET("/api/cndy/effects", func(c *gin.Context) {
 		from, to, err := getFromAndTo(c)
 		if err != nil {
 			log.Printf("ERROR: %s", err)
@@ -101,7 +101,7 @@ func api(db *sqlx.DB) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"transactions": effects,
+			"effects": effects,
 		})
 		return
 	})
