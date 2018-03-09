@@ -5,8 +5,8 @@ import:
 - package: github.com/jmoiron/sqlx
 - package: github.com/mattn/go-sqlite3
   version: ^1.6.0
-- package: github.com/mattes/migrate
-  version: master
+- package: github.com/golang-migrate/migrate
+  version: ^3.2.0
   subpackages:
     - database/sqlite3
     - source/file

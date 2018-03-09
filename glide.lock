@@ -1,5 +1,5 @@
-hash: 258e50d46f6df9d349865da2a9256c76c9882f60feec6a1be749715f107c6991
-updated: 2018-03-09T17:07:04.517646+01:00
+hash: a90922ae167b2095dd21228b09493d9e5d05dd24ad81bbe9fe99baf8c2811800
+updated: 2018-03-09T17:09:23.712486+01:00
 imports:
 - name: github.com/agl/ed25519
   version: 278e1ec8e8a6e017cd07577924d6766039146ced
@@ -24,6 +24,13 @@ imports:
 - name: github.com/go-errors/errors
   version: a41850380601eeb43f4350f7d17c6bbd8944aaf8
   repo: https://github.com/go-errors/errors
+- name: github.com/golang-migrate/migrate
+  version: 22f249514de9aa3f8a720a7cabbdd45d294f83a1
+  subpackages:
+  - database
+  - database/sqlite3
+  - source
+  - source/file
 - name: github.com/golang/protobuf
   version: bbd03ef6da3a115852eaf24c8a1c46aeb39aa175
   subpackages:
@@ -35,13 +42,6 @@ imports:
 - name: github.com/manucorporat/sse
   version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
   repo: https://github.com/manucorporat/sse
-- name: github.com/mattes/migrate
-  version: d23f71b03c4a439b81ccccb2ac5090032ec5c735
-  subpackages:
-  - database
-  - database/sqlite3
-  - source
-  - source/file
 - name: github.com/mattn/go-isatty
   version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
 - name: github.com/mattn/go-sqlite3
