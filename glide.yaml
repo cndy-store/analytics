@@ -1,0 +1,21 @@
+package: github.com/chr4/cndy-analytics
+import:
+- package: github.com/gin-gonic/gin
+  version: ^1.2.0
+- package: github.com/jmoiron/sqlx
+- package: github.com/mattn/go-sqlite3
+  version: ^1.6.0
+- package: github.com/mattes/migrate
+  version: master
+  subpackages:
+    - database/sqlite3
+    - source/file
+- package: github.com/stellar/go
+  repo: https://github.com/chr4/go-stellar-sdk
+  version: stream-effects
+  subpackages:
+  - clients/horizon
+  - keypair
+- package: golang.org/x/net
+  subpackages:
+  - context

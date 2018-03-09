@@ -1,3 +1,13 @@
+# Build
+
+Dependency management is done via [Glide](https://glide.sh).
+
+```bash
+glide install
+go build
+```
+
+
 # API
 
 ## Stats
