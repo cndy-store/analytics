@@ -30,16 +30,6 @@ func main() {
 	// Start API in go subroutine
 	go api(db)
 
-	// Go subroutine to periodically print status
-	go func() {
-		ticker := time.NewTicker(time.Millisecond * 5000)
-		for _ = range ticker.C {
-			log.Printf("DEBUG: Total %s transferred: %f", ASSET_CODE, effect.TotalAmount(db, effect.Filter{Type: "account_credited"}))
-			log.Printf("       Total trustlines created: %d", effect.TotalCount(db, effect.Filter{Type: "trustline_created"}))
-			log.Printf("       Cursor: %s", cursor.GetLatest(db))
-		}
-	}()
-
 	client := horizon.DefaultTestNetClient
 	ctx := context.Background() // Stream indefinitly
 
