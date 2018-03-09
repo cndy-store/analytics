@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/chr4/cndy-analytics/models/cursor"
 	"github.com/chr4/cndy-analytics/models/effect"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/sqlite3"
@@ -57,6 +58,7 @@ func main() {
 
 func api(db *sqlx.DB) {
 	router := gin.Default()
+	router.Use(cors.Default()) // Allow all origins
 
 	// GET /cndy/stats[?from=XXX&to=XXX]
 	router.GET("/stats", func(c *gin.Context) {

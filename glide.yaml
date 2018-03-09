@@ -8,14 +8,16 @@ import:
 - package: github.com/golang-migrate/migrate
   version: ^3.2.0
   subpackages:
-    - database/sqlite3
-    - source/file
+  - database/sqlite3
+  - source/file
 - package: github.com/stellar/go
-  repo: https://github.com/chr4/go-stellar-sdk
   version: stream-effects
+  repo: https://github.com/chr4/go-stellar-sdk
   subpackages:
   - clients/horizon
   - keypair
 - package: golang.org/x/net
   subpackages:
   - context
+- package: github.com/gin-contrib/cors
+  version: ^1.2.0

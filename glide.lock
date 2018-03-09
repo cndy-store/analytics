@@ -1,5 +1,5 @@
-hash: a90922ae167b2095dd21228b09493d9e5d05dd24ad81bbe9fe99baf8c2811800
-updated: 2018-03-09T17:09:23.712486+01:00
+hash: 802b3e153236034c990fe551f0dcc6aa6b28f6f1f3aa760941390518743b06db
+updated: 2018-03-09T22:33:29.258566+01:00
 imports:
 - name: github.com/agl/ed25519
   version: 278e1ec8e8a6e017cd07577924d6766039146ced
@@ -14,6 +14,8 @@ imports:
 - name: github.com/getsentry/raven-go
   version: c9d3cc542ad199f62c0264286be537f9bce6063c
   repo: https://github.com/getsentry/raven-go
+- name: github.com/gin-contrib/cors
+  version: cf4846e6a636a76237a28d9286f163c132e841bc
 - name: github.com/gin-contrib/sse
   version: 22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae
 - name: github.com/gin-gonic/gin
