@@ -3,6 +3,7 @@ package effect
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/chr4/cndy-analytics/models/asset_stat"
 	"github.com/jmoiron/sqlx"
 	"github.com/stellar/go/clients/horizon"
 	"log"
@@ -47,6 +48,15 @@ func New(db *sqlx.DB, effect horizon.Effect) (err error) {
 	                  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
 		effect.ID, effect.Links.Operation.Href, effect.PT, effect.Account, effect.Amount, effect.Type, effect.StartingBalance, effect.Balance.Balance, effect.Balance.Limit,
 		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code, timestamp)
+	if err != nil {
+		return
+	}
+
+	// Store amount_transfered and amount_issued upon insert in a different table
+	err = assetStat.New(db, effect, timestamp)
+	if err != nil {
+		return
+	}
 
 	log.Printf("--+--[ %s ]", effect.Asset.Code)
 	log.Printf("  |")
@@ -138,8 +148,7 @@ func ItemCount(db *sqlx.DB, filter Filter) (count int) {
 	return
 }
 
-// GetAllForEvent returns all available contribution_types, marking those active for a specific event
-func GetAll(db *sqlx.DB, filter Filter) (effects []Effect, err error) {
+func Get(db *sqlx.DB, filter Filter) (effects []Effect, err error) {
 	filter.Defaults()
 	err = db.Select(&effects, `SELECT * FROM effects WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
 		filter.From.Unix(), filter.To.Unix())

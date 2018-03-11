@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"github.com/chr4/cndy-analytics/models/asset_stat"
 	"github.com/chr4/cndy-analytics/models/cursor"
 	"github.com/chr4/cndy-analytics/models/effect"
 	"github.com/gin-contrib/cors"
@@ -92,7 +93,7 @@ func api(db *sqlx.DB) {
 			return
 		}
 
-		effects, err := effect.GetAll(db, effect.Filter{From: from, To: to})
+		effects, err := effect.Get(db, effect.Filter{From: from, To: to})
 		if err != nil {
 			log.Printf("ERROR: %s", err)
 			c.String(http.StatusInternalServerError, "")
@@ -101,6 +102,31 @@ func api(db *sqlx.DB) {
 
 		c.JSON(http.StatusOK, gin.H{
 			"effects": effects,
+		})
+		return
+	})
+
+	// GET /history[?from=XXX&to=XXX]
+	router.GET("/history", func(c *gin.Context) {
+		from, to, err := getFromAndTo(c)
+		if err != nil {
+			log.Printf("ERROR: %s", err)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  "error",
+				"message": err.Error(),
+			})
+			return
+		}
+
+		assetStats, err := assetStat.Get(db, assetStat.Filter{From: from, To: to})
+		if err != nil {
+			log.Printf("ERROR: %s", err)
+			c.String(http.StatusInternalServerError, "")
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"history": assetStats,
 		})
 		return
 	})

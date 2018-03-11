@@ -78,3 +78,33 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
   ]
 }
 ```
+
+## Asset stats
+
+GET http://api.cndy.store:3144/history[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
+
+If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
+
+```json
+{
+  "history": [
+    {
+      "asset_type": "credit_alphanum4",
+      "asset_code": "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU",
+      "asset_issuer": "CNDY",
+      "num_accounts": 1,
+      "num_effects": 1,
+      "created_at": "2018-03-03T23:05:43Z"
+    },
+    {
+      "asset_type": "credit_alphanum4",
+      "asset_code": "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU",
+      "asset_issuer": "CNDY",
+      "total_amount": "12.0",
+      "num_accounts": 2,
+      "num_effects": 2,
+      "created_at": "2018-03-03T23:05:43Z"
+    }
+  ]
+}
+```
