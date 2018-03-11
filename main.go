@@ -36,7 +36,7 @@ func main() {
 
 	for {
 		currentCursor := cursor.GetLatest(db)
-		err := client.StreamEffects(ctx, &currentCursor, func(e horizon.Effect) {
+		client.StreamEffects(ctx, &currentCursor, func(e horizon.Effect) {
 			if e.Asset.Code == ASSET_CODE && e.Asset.Issuer == ASSET_ISSUER {
 				err = effect.New(db, e)
 				if err != nil {
@@ -49,10 +49,6 @@ func main() {
 				log.Printf("Error saving to database: %s", err)
 			}
 		})
-
-		if err != nil {
-			log.Printf("INFO: %s", err)
-		}
 	}
 }
 
