@@ -3,6 +3,9 @@ CREATE TABLE cursors (
   paging_token VARCHAR(64) NOT NULL
 );
 
+-- Set genesis cursor (Mon Mar 12 18:01:12 CET 2018)
+INSERT INTO cursors(paging_token) VALUES('33819440072110101-2');
+
 CREATE TABLE effects (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   effect_id VARCHAR(128),

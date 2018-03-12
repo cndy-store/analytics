@@ -18,13 +18,13 @@ type Cursor struct {
 }
 
 func New(db *sqlx.DB, cursor string) (err error) {
-	_, err = db.Exec(`INSERT INTO cursors(paging_token) VALUES($1)`, cursor)
+	_, err = db.Exec(`UPDATE cursors SET paging_token=$1 WHERE id=1`, cursor)
 	return
 }
 
 func GetLatest(db *sqlx.DB) (cursor horizon.Cursor) {
 	var c string
-	err := db.Get(&c, `SELECT paging_token FROM cursors ORDER BY id DESC LIMIT 1`)
+	err := db.Get(&c, `SELECT paging_token FROM cursors WHERE id=1`)
 	if err != nil {
 		log.Printf("Couldn't get cursor: %s", err)
 		log.Printf("Using genesis cursor %s", GENESIS_CURSOR)
