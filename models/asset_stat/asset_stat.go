@@ -27,7 +27,7 @@ func New(db *sqlx.DB, effect horizon.Effect, timestamp time.Time) (err error) {
 					         (SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1),
 					         (SELECT COUNT(DISTINCT account) FROM effects),
 							 (SELECT COUNT(*) FROM effects))`,
-		effect.Asset.Issuer, effect.Asset.Code, effect.Asset.Type, timestamp)
+		effect.Asset.Code, effect.Asset.Issuer, effect.Asset.Type, timestamp)
 
 	return
 }
