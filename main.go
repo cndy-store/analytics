@@ -21,7 +21,7 @@ import (
 
 // Our asset code to watch and the cursor to when the asset was first introduced
 const ASSET_CODE = "CNDY"
-const ASSET_ISSUER = "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU"
+const ASSET_ISSUER = "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX"
 
 func main() {
 	db, err := initdb("database.sqlite3")
