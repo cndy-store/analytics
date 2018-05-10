@@ -1,5 +1,5 @@
 hash: 802b3e153236034c990fe551f0dcc6aa6b28f6f1f3aa760941390518743b06db
-updated: 2018-03-09T22:33:29.258566+01:00
+updated: 2018-05-05T15:29:27.172512+02:00
 imports:
 - name: github.com/agl/ed25519
   version: 278e1ec8e8a6e017cd07577924d6766039146ced
@@ -11,9 +11,6 @@ imports:
   repo: https://github.com/davecgh/go-spew
   subpackages:
   - spew
-- name: github.com/getsentry/raven-go
-  version: c9d3cc542ad199f62c0264286be537f9bce6063c
-  repo: https://github.com/getsentry/raven-go
 - name: github.com/gin-contrib/cors
   version: cf4846e6a636a76237a28d9286f163c132e841bc
 - name: github.com/gin-contrib/sse
@@ -34,13 +31,18 @@ imports:
   - source
   - source/file
 - name: github.com/golang/protobuf
-  version: bbd03ef6da3a115852eaf24c8a1c46aeb39aa175
+  version: b4deda0973fb4c70b50d226b1af49f3da59f5265
   subpackages:
   - proto
 - name: github.com/jmoiron/sqlx
-  version: cf35089a197953c69420c8d0cecda90809764b1d
+  version: 2aeb6a910c2b94f2d5eb53d9895d80e27264ec41
   subpackages:
   - reflectx
+- name: github.com/lib/pq
+  version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
+  repo: https://github.com/lib/pq
+  subpackages:
+  - oid
 - name: github.com/manucorporat/sse
   version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
   repo: https://github.com/manucorporat/sse
@@ -70,7 +72,7 @@ imports:
   subpackages:
   - hooks/test
 - name: github.com/stellar/go
-  version: 40c8082c5bfcebca3a6e54fe4712912f91858add
+  version: a5618c734e920054d80ed88a0d35cdcec0ec1302
   repo: https://github.com/chr4/go-stellar-sdk
   subpackages:
   - amount
@@ -98,15 +100,15 @@ imports:
   - mock
   - require
 - name: github.com/ugorji/go
-  version: 02537d3a3e32ef636a53519265d211bd208ca488
+  version: f3cacc17c85ecb7f1b6a9e373ee85d1480919868
   subpackages:
   - codec
 - name: golang.org/x/net
-  version: 9bc2a3340c92c17a20edcd0080e93851ed58f5d5
+  version: 640f4622ab692b87c2f3a94265e6f579fe38263d
   subpackages:
   - context
 - name: golang.org/x/sys
-  version: 7dca6fe1f43775aa6d1334576870ff63f978f539
+  version: 6f686a352de66814cdd080d970febae7767857a3
   subpackages:
   - unix
 - name: gopkg.in/go-playground/validator.v8
