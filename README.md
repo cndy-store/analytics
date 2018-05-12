@@ -15,6 +15,12 @@ Cross compile for Linux with [Docker](https://docker.com/):
 docker-compose up
 ```
 
+Run tests
+
+```bash
+docker-compose run cndy-analytics /bin/bash -c 'go test ./...'
+```
+
 
 # API
 

@@ -12,17 +12,17 @@ import (
 )
 
 type Effect struct {
-	Id              *uint32 `db:"id"               json:"-"`
-	EffectId        *string `db:"effect_id"        json:"id,omitempty"`
-	Operation       *string `db:"operation"        json:"operation,omitempty"`
-	Succeeds        *string `db:"succeeds"         json:"succeeds,omitempty"` // Currently not used
-	Precedes        *string `db:"precedes"         json:"precedes,omitempty"` // Currently not used
-	PagingToken     *string `db:"paging_token"     json:"paging_token,omitempty"`
-	Account         *string `db:"account"          json:"account,omitempty"`
-	Amount          *string `db:"amount"           json:"amount,omitempty"`
-	Type            *string `db:"type"             json:"type,omitempty"`
-	TypeI           *int32  `db:"type_i"           json:"type_i,omitempty"` // Currently not used
-	StartingBalance *string `db:"starting_balance" json:"starting_balance,omitempty"`
+	Id              *uint32  `db:"id"               json:"-"`
+	EffectId        *string  `db:"effect_id"        json:"id,omitempty"`
+	Operation       *string  `db:"operation"        json:"operation,omitempty"`
+	Succeeds        *string  `db:"succeeds"         json:"succeeds,omitempty"` // Currently not used
+	Precedes        *string  `db:"precedes"         json:"precedes,omitempty"` // Currently not used
+	PagingToken     *string  `db:"paging_token"     json:"paging_token,omitempty"`
+	Account         *string  `db:"account"          json:"account,omitempty"`
+	Amount          *float32 `db:"amount"           json:"amount,omitempty"`
+	Type            *string  `db:"type"             json:"type,omitempty"`
+	TypeI           *int32   `db:"type_i"           json:"type_i,omitempty"` // Currently not used
+	StartingBalance *string  `db:"starting_balance" json:"starting_balance,omitempty"`
 
 	Balance      *string `db:"balance"       json:"balance,omitempty"`
 	BalanceLimit *string `db:"balance_limit" json:"balance_limit,omitempty"`
@@ -61,7 +61,7 @@ func New(db *sqlx.DB, effect horizon.Effect) (err error) {
 
 	// Just input the fields we're requiring for now, can be replayed anytime form the chain later.
 	_, err = db.Exec(`INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, starting_balance, balance, balance_limit, asset_type, asset_issuer, asset_code, created_at)
-	                  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+		VALUES($1, $2, $3, $4, $5::REAL, $6, $7, $8, $9, $10, $11, $12, $13)`,
 		effect.ID, effect.Links.Operation.Href, effect.PT, effect.Account, effect.Amount, effect.Type, effect.StartingBalance, effect.Balance.Balance, effect.Balance.Limit,
 		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code, operation.CreatedAt)
 	if err != nil {
@@ -108,9 +108,7 @@ func TotalAmount(db *sqlx.DB, filter Filter) (amount float64) {
 		return
 	}
 
-	// NOTE: SQLite doesn't have real date types, instead they are represented as strings. The
-	//       workaround with strftime() can be removed when using e.g. PostgreSQL
-	err := db.Get(&amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+	err := db.Get(&amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestsamp AND $3::timestsamp`,
 		filter.Type, filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Print(err)
@@ -121,7 +119,7 @@ func TotalAmount(db *sqlx.DB, filter Filter) (amount float64) {
 // Total assets issued
 func TotalIssued(db *sqlx.DB, issuer string, filter Filter) (amount float64) {
 	filter.Defaults()
-	err := db.Get(&amount, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+	err := db.Get(&amount, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestsamp AND $3::timestamp`,
 		issuer, filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Print(err)
@@ -136,7 +134,7 @@ func TotalCount(db *sqlx.DB, filter Filter) (count int) {
 		return
 	}
 
-	err := db.Get(&count, `SELECT COUNT(*) FROM effects WHERE type=$1 AND cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+	err := db.Get(&count, `SELECT COUNT(*) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
 		filter.Type, filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Printf("[ERROR] effect.TotalCount(): %s", err)
@@ -146,7 +144,7 @@ func TotalCount(db *sqlx.DB, filter Filter) (count int) {
 
 func AccountCount(db *sqlx.DB, filter Filter) (count int) {
 	filter.Defaults()
-	err := db.Get(&count, `SELECT COUNT(DISTINCT account) FROM effects WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+	err := db.Get(&count, `SELECT COUNT(DISTINCT account) FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
 		filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Printf("[ERROR] effect.AccountCount(): %s", err)
@@ -156,7 +154,7 @@ func AccountCount(db *sqlx.DB, filter Filter) (count int) {
 
 func ItemCount(db *sqlx.DB, filter Filter) (count int) {
 	filter.Defaults()
-	err := db.Get(&count, `SELECT COUNT(*) FROM effects WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+	err := db.Get(&count, `SELECT COUNT(*) FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
 		filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Printf("[ERROR] effect.ItemCount(): %s", err)
@@ -166,7 +164,7 @@ func ItemCount(db *sqlx.DB, filter Filter) (count int) {
 
 func Get(db *sqlx.DB, filter Filter) (effects []Effect, err error) {
 	filter.Defaults()
-	err = db.Select(&effects, `SELECT * FROM effects WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+	err = db.Select(&effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestsamp AND $2::timestsamp`,
 		filter.From.Unix(), filter.To.Unix())
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] effect.Get(): %s", err)

@@ -1,11 +1,11 @@
 CREATE TABLE asset_stats (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   paging_token VARCHAR(128),
   asset_type VARCHAR(128),
   asset_code VARCHAR(128),
   asset_issuer VARCHAR(128),
-  total_amount VARCHAR(128),
+  total_amount REAL,
   num_accounts INTEGER,
   num_effects INTEGER,
-  created_at DATETIME
+  created_at TIMESTAMP
 );

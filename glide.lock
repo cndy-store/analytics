@@ -1,5 +1,5 @@
-hash: cb6ac56eb34aea1ce1eae825041a0794acad058a036fc2f85ef07b7e8243a84f
-updated: 2018-05-13T00:34:46.484121+02:00
+hash: 7dc1526bc69405c0f56f59d7be92a398a6ffb50eab39320072dad78909e82fb6
+updated: 2018-05-13T00:36:29.406646+02:00
 imports:
 - name: github.com/agl/ed25519
   version: 278e1ec8e8a6e017cd07577924d6766039146ced
@@ -27,7 +27,7 @@ imports:
   version: 22f249514de9aa3f8a720a7cabbdd45d294f83a1
   subpackages:
   - database
-  - database/sqlite3
+  - database/postgres
   - source
   - source/file
 - name: github.com/golang/protobuf
@@ -40,7 +40,6 @@ imports:
   - reflectx
 - name: github.com/lib/pq
   version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
-  repo: https://github.com/lib/pq
   subpackages:
   - oid
 - name: github.com/manucorporat/sse
@@ -48,8 +47,6 @@ imports:
   repo: https://github.com/manucorporat/sse
 - name: github.com/mattn/go-isatty
   version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
-- name: github.com/mattn/go-sqlite3
-  version: 6c771bb9887719704b210e87e934f08be014bdb1
 - name: github.com/nullstyle/go-xdr
   version: a875e7c9fa2388ce03279f6b5ba1c2ccd1f9e917
   repo: https://github.com/nullstyle/go-xdr

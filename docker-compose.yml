@@ -1,7 +1,24 @@
 version: '3'
 services:
+  postgres:
+    image: postgres:10-alpine
+    environment:
+      - POSTGRES_USER=cndy
+      - POSTGRES_DB=cndy
+
   cndy-analytics:
     build: ./
     image: cndy-store/analytics
     volumes:
       - ./:/go/src/github.com/cndy-store/analytics
+    environment:
+      - PGHOST=postgres
+      - PGUSER=cndy
+      - PGDATABASE=cndy
+      - PGSSLMODE=disable
+    depends_on:
+      - postgres
+    links:
+      - postgres
+    ports:
+      - "3144:3144"

@@ -1,23 +1,17 @@
 package cursor
 
 import (
-	"github.com/cndy-store/analytics/utils/database/sqlite"
-	"github.com/jmoiron/sqlx"
+	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
 	"testing"
 )
 
-var db *sqlx.DB
-
-func init() {
-	var err error
-	db, err = sqlite.InitTestDB("../../")
-	if err != nil {
-		panic(err)
-	}
-}
-
 func TestGenesisCursor(t *testing.T) {
+	db, err := sql.ResetDB("../../")
+	if err != nil {
+		t.Error(err)
+	}
+
 	genesisCursor := horizon.Cursor("33819440072110101-2") // See db/migrations/0001_initial.up.sql
 
 	currentCursor, err := GetLatest(db)
@@ -31,9 +25,14 @@ func TestGenesisCursor(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
+	db, err := sql.ResetDB("../../")
+	if err != nil {
+		t.Error(err)
+	}
+
 	newCursor := "33819440072111111-1"
 
-	err := New(db, newCursor)
+	err = New(db, newCursor)
 	if err != nil {
 		t.Errorf("cursor.New(): %s", err)
 	}

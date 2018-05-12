@@ -1,5 +1,5 @@
 CREATE TABLE cursors (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   paging_token VARCHAR(64) NOT NULL
 );
 
@@ -7,14 +7,14 @@ CREATE TABLE cursors (
 INSERT INTO cursors(paging_token) VALUES('33819440072110101-2');
 
 CREATE TABLE effects (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   effect_id VARCHAR(128),
   operation VARCHAR(128),
   succeeds VARCHAR(128), -- Currently not used
   precedes VARCHAR(128), -- Currently not used
   paging_token VARCHAR(128),
   account VARCHAR(128),
-  amount VARCHAR(128),
+  amount REAL,
   type VARCHAR(128),
   type_i INTEGER, -- Currently not used
   starting_balance VARCHAR(128),
@@ -33,5 +33,5 @@ CREATE TABLE effects (
   signer_type VARCHAR(128),
 
   --- This field is extracted from the corresponding operation
-  created_at DATETIME
+  created_at TIMESTAMP
 );

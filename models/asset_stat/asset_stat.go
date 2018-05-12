@@ -14,7 +14,7 @@ type AssetStat struct {
 	AssetType   *string    `db:"asset_type"   json:"asset_type,omitempty"`
 	AssetCode   *string    `db:"asset_code"   json:"asset_code,omitempty"`
 	AssetIssuer *string    `db:"asset_issuer" json:"asset_issuer,omitempty"`
-	TotalAmount *string    `db:"total_amount" json:"total_amount,omitempty"`
+	TotalAmount *float32   `db:"total_amount" json:"total_amount,omitempty"`
 	NumAccounts *int32     `db:"num_accounts" json:"num_accounts,omitempty"`
 	NumEffects  *int32     `db:"num_effects"  json:"num_effects,omitempty"`
 	CreatedAt   *time.Time `db:"created_at"   json:"created_at,omitempty"`
@@ -52,7 +52,8 @@ func (f *Filter) Defaults() {
 
 func Get(db *sqlx.DB, filter Filter) (stats []AssetStat, err error) {
 	filter.Defaults()
-	err = db.Select(&stats, `SELECT * FROM asset_stats WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
+	// TODO: Migrate to postgres
+	err = db.Select(&stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
 		filter.From.Unix(), filter.To.Unix())
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] asset_stat.Get(): %s", err)

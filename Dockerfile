@@ -14,7 +14,10 @@ ADD glide.yaml /go/src/github.com/cndy-store/analytics/glide.yaml
 ADD glide.yaml /go/src/github.com/cndy-store/analytics/glide.lock
 RUN glide install
 
-# Copy application directory and build api
 ADD . /go/src/github.com/cndy-store/analytics
+RUN go build
 
-CMD ["go", "build"]
+# Run in production mode
+# ENV GIN_MODE release
+
+CMD ["sh", "-c", "./wait-for-it.sh ${PGHOST}:5432 -- ./analytics"]

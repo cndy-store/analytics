@@ -5,7 +5,7 @@ import (
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/models/cursor"
 	"github.com/cndy-store/analytics/models/effect"
-	"github.com/cndy-store/analytics/utils/database/sqlite"
+	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -21,7 +21,7 @@ const ASSET_CODE = "CNDY"
 const ASSET_ISSUER = "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX"
 
 func main() {
-	db, err := sqlite.OpenAndMigrate()
+	db, err := sql.OpenAndMigrate()
 	if err != nil {
 		log.Fatal("[ERROR] Couldn't open database: ", err)
 	}
