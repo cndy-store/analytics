@@ -1,4 +1,4 @@
-package: github.com/chr4/cndy-analytics
+package: github.com/cndy-store/analytics
 import:
 - package: github.com/gin-gonic/gin
   version: ^1.2.0

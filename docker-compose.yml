@@ -2,6 +2,6 @@ version: '3'
 services:
   cndy-analytics:
     build: ./
-    image: chr4/cndy-analytics
+    image: cndy-store/analytics
     volumes:
-      - ./:/go/src/github.com/chr4/cndy-analytics
+      - ./:/go/src/github.com/cndy-store/analytics

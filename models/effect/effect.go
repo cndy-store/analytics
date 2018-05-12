@@ -3,7 +3,7 @@ package effect
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/chr4/cndy-analytics/models/asset_stat"
+	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/jmoiron/sqlx"
 	"github.com/stellar/go/clients/horizon"
 	"log"

@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
-	"github.com/chr4/cndy-analytics/models/asset_stat"
-	"github.com/chr4/cndy-analytics/models/cursor"
-	"github.com/chr4/cndy-analytics/models/effect"
+	"github.com/cndy-store/analytics/models/asset_stat"
+	"github.com/cndy-store/analytics/models/cursor"
+	"github.com/cndy-store/analytics/models/effect"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate"
