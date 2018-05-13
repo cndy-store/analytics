@@ -39,21 +39,37 @@ type Effect struct {
 	CreatedAt *time.Time `db:"created_at"  json:"created_at,omitempty"`
 }
 
+type Operation struct {
+	From      string    `json:"from"`
+	To        string    `json:"to"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 func New(db *sqlx.DB, effect horizon.Effect) (err error) {
-	// Get timestamp from operation
-	timestamp := getOperationTime(effect.Links.Operation.Href)
+	// Get operation
+	operation := getOperation(effect.Links.Operation.Href)
+
+	// Check whether sender and receiver are the same in account_credited and account_debited
+	// operations. If so, ignore this effect.
+	// This prevents issues from unchecked transaction to oneself, see:
+	// https://stellar.stackexchange.com/questions/1036/why-are-overspending-transactions-added-to-the-ledger
+	if operation.To == operation.From && (effect.Asset.Type == "account_credited" || effect.Asset.Type == "account_debited") {
+		log.Printf("[WARN] Found effect where sender and receiver are the same account, ignoring.")
+		log.Printf("       Debug: %v", effect)
+		return
+	}
 
 	// Just input the fields we're requiring for now, can be replayed anytime form the chain later.
 	_, err = db.Exec(`INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, starting_balance, balance, balance_limit, asset_type, asset_issuer, asset_code, created_at)
 	                  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
 		effect.ID, effect.Links.Operation.Href, effect.PT, effect.Account, effect.Amount, effect.Type, effect.StartingBalance, effect.Balance.Balance, effect.Balance.Limit,
-		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code, timestamp)
+		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code, operation.CreatedAt)
 	if err != nil {
 		return
 	}
 
 	// Store amount_transfered and amount_issued upon insert in a different table
-	err = assetStat.New(db, effect, timestamp)
+	err = assetStat.New(db, effect, operation.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -63,7 +79,7 @@ func New(db *sqlx.DB, effect horizon.Effect) (err error) {
 	log.Printf("  +->  Type:      %s", effect.Type)
 	log.Printf("  +->  Account:   %s", effect.Account)
 	log.Printf("  +->  Amount:    %s", effect.Amount)
-	log.Printf("  +->  Timestamp: %s\n\n", timestamp)
+	log.Printf("  +->  Timestamp: %s\n\n", operation.CreatedAt)
 	return
 }
 
@@ -158,7 +174,7 @@ func Get(db *sqlx.DB, filter Filter) (effects []Effect, err error) {
 	return
 }
 
-func getOperationTime(url string) (t time.Time) {
+func getOperation(url string) (op Operation) {
 	var h = &http.Client{Timeout: 2 * time.Second}
 
 	r, err := h.Get(url)
@@ -169,17 +185,10 @@ func getOperationTime(url string) (t time.Time) {
 	}
 	defer r.Body.Close()
 
-	type operation struct {
-		CreatedAt time.Time `json:"created_at"`
-	}
-	op := operation{}
-
 	err = json.NewDecoder(r.Body).Decode(&op)
 	if err != nil {
 		log.Printf("[ERROR] effect.getOperationTime(): Couldn't decode JSON body: %s", err)
 		return
 	}
-
-	t = op.CreatedAt
 	return
 }
