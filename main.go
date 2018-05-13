@@ -33,7 +33,14 @@ func main() {
 	ctx := context.Background() // Stream indefinitly
 
 	for {
-		currentCursor := cursor.GetLatest(db)
+		currentCursor, err := cursor.GetLatest(db)
+		if err != nil {
+			log.Printf("[ERROR] Couldn't get latest cursor from database: %s", err)
+			log.Printf("        Re-trying in 5 seconds...")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
 		client.StreamEffects(ctx, &currentCursor, func(e horizon.Effect) {
 			if e.Asset.Code == ASSET_CODE && e.Asset.Issuer == ASSET_ISSUER {
 				err = effect.New(db, e)
@@ -66,6 +73,11 @@ func api(db *sqlx.DB) {
 			return
 		}
 
+		currentCursor, err := cursor.GetLatest(db)
+		if err != nil {
+			log.Printf("[ERROR] Couldn't get latest cursor from database: %s", err)
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"asset_code":         ASSET_CODE,
 			"effect_count":       effect.ItemCount(db, effect.Filter{From: from, To: to}),
@@ -73,7 +85,7 @@ func api(db *sqlx.DB) {
 			"amount_transferred": effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to}),
 			"trustlines_created": effect.TotalCount(db, effect.Filter{Type: "trustline_created", From: from, To: to}),
 			"amount_issued":      effect.TotalIssued(db, ASSET_ISSUER, effect.Filter{From: from, To: to}),
-			"current_cursor":     cursor.GetLatest(db),
+			"current_cursor":     currentCursor,
 		})
 		return
 	})
