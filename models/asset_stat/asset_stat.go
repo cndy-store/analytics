@@ -54,7 +54,7 @@ func Get(db *sqlx.DB, filter Filter) (stats []AssetStat, err error) {
 	err = db.Select(&stats, `SELECT * FROM asset_stats WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
 		filter.From.Unix(), filter.To.Unix())
 	if err == sql.ErrNoRows {
-		log.Print(err)
+		log.Printf("[ERROR] asset_stat.Get(): %s", err)
 	}
 	return
 }

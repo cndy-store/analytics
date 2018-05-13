@@ -22,7 +22,7 @@ func TestGenesisCursor(t *testing.T) {
 
 	currentCursor, err := GetLatest(db)
 	if err != nil {
-		t.Errorf("Error getting latest cursor: %s", err)
+		t.Errorf("cursor.GetLatest(): %s", err)
 	}
 
 	if currentCursor != genesisCursor {
@@ -35,12 +35,12 @@ func TestNew(t *testing.T) {
 
 	err := New(db, newCursor)
 	if err != nil {
-		t.Errorf("Error creating new cursor: %s", err)
+		t.Errorf("cursor.New(): %s", err)
 	}
 
 	currentCursor, err := GetLatest(db)
 	if err != nil {
-		t.Errorf("Error getting latest cursor: %s", err)
+		t.Errorf("cursor.GetLastest(): %s", err)
 	}
 
 	if currentCursor != horizon.Cursor(newCursor) {

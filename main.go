@@ -23,7 +23,7 @@ const ASSET_ISSUER = "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX"
 func main() {
 	db, err := sqlite.OpenAndMigrate()
 	if err != nil {
-		log.Fatal("Fatal error opening database: ", err)
+		log.Fatal("[ERROR] Couldn't open database: ", err)
 	}
 
 	// Start API in go subroutine
@@ -45,13 +45,13 @@ func main() {
 			if e.Asset.Code == ASSET_CODE && e.Asset.Issuer == ASSET_ISSUER {
 				err = effect.New(db, e)
 				if err != nil {
-					log.Printf("Error saving to database: %s", err)
+					log.Printf("[ERROR] Couldn't save effect to database: %s", err)
 				}
 			}
 
 			err = cursor.New(db, e.PT)
 			if err != nil {
-				log.Printf("Error saving to database: %s", err)
+				log.Printf("[ERROR] Couldn't save cursor to database: %s", err)
 			}
 		})
 	}
@@ -65,7 +65,7 @@ func api(db *sqlx.DB) {
 	router.GET("/stats", func(c *gin.Context) {
 		from, to, err := getFromAndTo(c)
 		if err != nil {
-			log.Printf("ERROR: %s", err)
+			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  "error",
 				"message": err.Error(),
@@ -94,7 +94,7 @@ func api(db *sqlx.DB) {
 	router.GET("/effects", func(c *gin.Context) {
 		from, to, err := getFromAndTo(c)
 		if err != nil {
-			log.Printf("ERROR: %s", err)
+			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  "error",
 				"message": err.Error(),
@@ -104,7 +104,7 @@ func api(db *sqlx.DB) {
 
 		effects, err := effect.Get(db, effect.Filter{From: from, To: to})
 		if err != nil {
-			log.Printf("ERROR: %s", err)
+			log.Printf("[ERROR] Couldn't get effect from database: %s", err)
 			c.String(http.StatusInternalServerError, "")
 			return
 		}
@@ -119,7 +119,7 @@ func api(db *sqlx.DB) {
 	router.GET("/history", func(c *gin.Context) {
 		from, to, err := getFromAndTo(c)
 		if err != nil {
-			log.Printf("ERROR: %s", err)
+			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  "error",
 				"message": err.Error(),
@@ -129,7 +129,7 @@ func api(db *sqlx.DB) {
 
 		assetStats, err := assetStat.Get(db, assetStat.Filter{From: from, To: to})
 		if err != nil {
-			log.Printf("ERROR: %s", err)
+			log.Printf("[ERROR] Couldn't get asset stats from database: %s", err)
 			c.String(http.StatusInternalServerError, "")
 			return
 		}

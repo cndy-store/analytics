@@ -88,7 +88,7 @@ func (f *Filter) Defaults() {
 func TotalAmount(db *sqlx.DB, filter Filter) (amount float64) {
 	filter.Defaults()
 	if filter.Type == "" {
-		log.Printf("Error: TotalAmount(): No type given.")
+		log.Printf("[ERROR] effect.TotalAmount(): No type given.")
 		return
 	}
 
@@ -116,14 +116,14 @@ func TotalIssued(db *sqlx.DB, issuer string, filter Filter) (amount float64) {
 func TotalCount(db *sqlx.DB, filter Filter) (count int) {
 	filter.Defaults()
 	if filter.Type == "" {
-		log.Printf("Error: TotalCount(): No type given.")
+		log.Printf("[ERROR] effect.TotalCount(): No type given.")
 		return
 	}
 
 	err := db.Get(&count, `SELECT COUNT(*) FROM effects WHERE type=$1 AND cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
 		filter.Type, filter.From.Unix(), filter.To.Unix())
 	if err != nil {
-		log.Print(err)
+		log.Printf("[ERROR] effect.TotalCount(): %s", err)
 	}
 	return
 }
@@ -133,7 +133,7 @@ func AccountCount(db *sqlx.DB, filter Filter) (count int) {
 	err := db.Get(&count, `SELECT COUNT(DISTINCT account) FROM effects WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
 		filter.From.Unix(), filter.To.Unix())
 	if err != nil {
-		log.Print(err)
+		log.Printf("[ERROR] effect.AccountCount(): %s", err)
 	}
 	return
 }
@@ -143,7 +143,7 @@ func ItemCount(db *sqlx.DB, filter Filter) (count int) {
 	err := db.Get(&count, `SELECT COUNT(*) FROM effects WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
 		filter.From.Unix(), filter.To.Unix())
 	if err != nil {
-		log.Print(err)
+		log.Printf("[ERROR] effect.ItemCount(): %s", err)
 	}
 	return
 }
@@ -153,7 +153,7 @@ func Get(db *sqlx.DB, filter Filter) (effects []Effect, err error) {
 	err = db.Select(&effects, `SELECT * FROM effects WHERE cast(strftime('%s', created_at) AS INT) BETWEEN $2 AND $3`,
 		filter.From.Unix(), filter.To.Unix())
 	if err == sql.ErrNoRows {
-		log.Print(err)
+		log.Printf("[ERROR] effect.Get(): %s", err)
 	}
 	return
 }
@@ -163,7 +163,8 @@ func getOperationTime(url string) (t time.Time) {
 
 	r, err := h.Get(url)
 	if err != nil {
-		log.Printf("GET Error: %s", err)
+		log.Printf("[ERROR] effect.getOperationTime() HTTP request 'GET %s'", url)
+		log.Printf("        %s", err)
 		return
 	}
 	defer r.Body.Close()
@@ -175,7 +176,7 @@ func getOperationTime(url string) (t time.Time) {
 
 	err = json.NewDecoder(r.Body).Decode(&op)
 	if err != nil {
-		log.Printf("Couldn't decode body: %s", err)
+		log.Printf("[ERROR] effect.getOperationTime(): Couldn't decode JSON body: %s", err)
 		return
 	}
 
