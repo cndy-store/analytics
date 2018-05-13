@@ -1,5 +1,6 @@
 CREATE TABLE asset_stats (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  paging_token VARCHAR(128),
   asset_type VARCHAR(128),
   asset_code VARCHAR(128),
   asset_issuer VARCHAR(128),

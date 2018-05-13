@@ -10,6 +10,7 @@ import (
 
 type AssetStat struct {
 	Id          *uint32    `db:"id"           json:"-"`
+	PagingToken *string    `db:"paging_token"   json:"paging_token,omitempty"`
 	AssetType   *string    `db:"asset_type"   json:"asset_type,omitempty"`
 	AssetCode   *string    `db:"asset_code"   json:"asset_code,omitempty"`
 	AssetIssuer *string    `db:"asset_issuer" json:"asset_issuer,omitempty"`
@@ -22,12 +23,12 @@ type AssetStat struct {
 func New(db *sqlx.DB, effect horizon.Effect, timestamp time.Time) (err error) {
 	// Store amount_transfered and amount_issued upon insert in a different table
 	// (analogue to the asset endpoint of Horizon)
-	_, err = db.Exec(`INSERT INTO asset_stats(asset_code, asset_issuer, asset_type, created_at, total_amount, num_accounts, num_effects)
-	                  VALUES ($1, $2, $3, $4,
+	_, err = db.Exec(`INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, created_at, total_amount, num_accounts, num_effects)
+	                  VALUES ($1, $2, $3, $4, $5,
 					         (SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1),
 					         (SELECT COUNT(DISTINCT account) FROM effects),
 							 (SELECT COUNT(*) FROM effects))`,
-		effect.Asset.Code, effect.Asset.Issuer, effect.Asset.Type, timestamp)
+		effect.PT, effect.Asset.Code, effect.Asset.Issuer, effect.Asset.Type, timestamp)
 
 	return
 }
