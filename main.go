@@ -5,13 +5,10 @@ import (
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/models/cursor"
 	"github.com/cndy-store/analytics/models/effect"
+	"github.com/cndy-store/analytics/utils/database/sqlite"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-migrate/migrate"
-	"github.com/golang-migrate/migrate/database/sqlite3"
-	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/stellar/go/clients/horizon"
 	"golang.org/x/net/context"
 	"log"
@@ -24,7 +21,7 @@ const ASSET_CODE = "CNDY"
 const ASSET_ISSUER = "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX"
 
 func main() {
-	db, err := initdb("database.sqlite3")
+	db, err := sqlite.OpenAndMigrate()
 	if err != nil {
 		log.Fatal("Fatal error opening database: ", err)
 	}
@@ -132,31 +129,6 @@ func api(db *sqlx.DB) {
 	})
 
 	router.Run(":3144")
-}
-
-// Open database and run migrations
-func initdb(uri string) (db *sqlx.DB, err error) {
-	db, err = sqlx.Open("sqlite3", uri)
-	if err != nil {
-		return
-	}
-
-	driver, err := sqlite3.WithInstance(db.DB, &sqlite3.Config{})
-	if err != nil {
-		return
-	}
-
-	m, err := migrate.NewWithDatabaseInstance("file://db/migrations", "sqlite3", driver)
-	if err != nil {
-		return
-	}
-
-	err = m.Up()
-	if err == migrate.ErrNoChange {
-		err = nil
-	}
-
-	return
 }
 
 func getFromAndTo(c *gin.Context) (from *time.Time, to *time.Time, err error) {
