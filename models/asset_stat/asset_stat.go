@@ -1,8 +1,7 @@
 package assetStat
 
 import (
-	"database/sql"
-	"github.com/jmoiron/sqlx"
+	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
 	"log"
 	"time"
@@ -20,14 +19,14 @@ type AssetStat struct {
 	CreatedAt   *time.Time `db:"created_at"   json:"created_at,omitempty"`
 }
 
-func New(db *sqlx.DB, effect horizon.Effect, timestamp time.Time) (err error) {
+func New(db interface{}, effect horizon.Effect, timestamp time.Time) (err error) {
 	// Store amount_transfered and amount_issued upon insert in a different table
 	// (analogue to the asset endpoint of Horizon)
-	_, err = db.Exec(`INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, created_at, total_amount, num_accounts, num_effects)
-	                  VALUES ($1, $2, $3, $4, $5,
-					         (SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1),
-					         (SELECT COUNT(DISTINCT account) FROM effects),
-							 (SELECT COUNT(*) FROM effects))`,
+	_, err = sql.Exec(db, `INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, created_at, total_amount, num_accounts, num_effects)
+	                       VALUES ($1, $2, $3, $4, $5,
+					           (SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1),
+					           (SELECT COUNT(DISTINCT account) FROM effects),
+							   (SELECT COUNT(*) FROM effects))`,
 		effect.PT, effect.Asset.Code, effect.Asset.Issuer, effect.Asset.Type, timestamp)
 
 	return
@@ -50,10 +49,10 @@ func (f *Filter) Defaults() {
 	}
 }
 
-func Get(db *sqlx.DB, filter Filter) (stats []AssetStat, err error) {
+func Get(db interface{}, filter Filter) (stats []AssetStat, err error) {
 	filter.Defaults()
 	// TODO: Migrate to postgres
-	err = db.Select(&stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
+	err = sql.Select(db, &stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
 		filter.From.Unix(), filter.To.Unix())
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] asset_stat.Get(): %s", err)

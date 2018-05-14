@@ -1,10 +1,9 @@
 package effect
 
 import (
-	"database/sql"
 	"encoding/json"
 	"github.com/cndy-store/analytics/models/asset_stat"
-	"github.com/jmoiron/sqlx"
+	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
 	"log"
 	"net/http"
@@ -45,7 +44,7 @@ type Operation struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func New(db *sqlx.DB, effect horizon.Effect) (err error) {
+func New(db interface{}, effect horizon.Effect) (err error) {
 	// Get operation
 	operation := getOperation(effect.Links.Operation.Href)
 
@@ -60,7 +59,7 @@ func New(db *sqlx.DB, effect horizon.Effect) (err error) {
 	}
 
 	// Just input the fields we're requiring for now, can be replayed anytime form the chain later.
-	_, err = db.Exec(`INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, starting_balance, balance, balance_limit, asset_type, asset_issuer, asset_code, created_at)
+	_, err = sql.Exec(db, `INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, starting_balance, balance, balance_limit, asset_type, asset_issuer, asset_code, created_at)
 		VALUES($1, $2, $3, $4, $5::REAL, $6, $7, $8, $9, $10, $11, $12, $13)`,
 		effect.ID, effect.Links.Operation.Href, effect.PT, effect.Account, effect.Amount, effect.Type, effect.StartingBalance, effect.Balance.Balance, effect.Balance.Limit,
 		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code, operation.CreatedAt)
@@ -101,14 +100,14 @@ func (f *Filter) Defaults() {
 	}
 }
 
-func TotalAmount(db *sqlx.DB, filter Filter) (amount float64) {
+func TotalAmount(db interface{}, filter Filter) (amount float64) {
 	filter.Defaults()
 	if filter.Type == "" {
 		log.Printf("[ERROR] effect.TotalAmount(): No type given.")
 		return
 	}
 
-	err := db.Get(&amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestsamp AND $3::timestsamp`,
+	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestsamp AND $3::timestsamp`,
 		filter.Type, filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Print(err)
@@ -117,9 +116,9 @@ func TotalAmount(db *sqlx.DB, filter Filter) (amount float64) {
 }
 
 // Total assets issued
-func TotalIssued(db *sqlx.DB, issuer string, filter Filter) (amount float64) {
+func TotalIssued(db interface{}, issuer string, filter Filter) (amount float64) {
 	filter.Defaults()
-	err := db.Get(&amount, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestsamp AND $3::timestamp`,
+	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestsamp AND $3::timestamp`,
 		issuer, filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Print(err)
@@ -127,14 +126,14 @@ func TotalIssued(db *sqlx.DB, issuer string, filter Filter) (amount float64) {
 	return
 }
 
-func TotalCount(db *sqlx.DB, filter Filter) (count int) {
+func TotalCount(db interface{}, filter Filter) (count int) {
 	filter.Defaults()
 	if filter.Type == "" {
 		log.Printf("[ERROR] effect.TotalCount(): No type given.")
 		return
 	}
 
-	err := db.Get(&count, `SELECT COUNT(*) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
+	err := sql.Get(db, &count, `SELECT COUNT(*) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
 		filter.Type, filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Printf("[ERROR] effect.TotalCount(): %s", err)
@@ -142,9 +141,9 @@ func TotalCount(db *sqlx.DB, filter Filter) (count int) {
 	return
 }
 
-func AccountCount(db *sqlx.DB, filter Filter) (count int) {
+func AccountCount(db interface{}, filter Filter) (count int) {
 	filter.Defaults()
-	err := db.Get(&count, `SELECT COUNT(DISTINCT account) FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
+	err := sql.Get(db, &count, `SELECT COUNT(DISTINCT account) FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
 		filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Printf("[ERROR] effect.AccountCount(): %s", err)
@@ -152,9 +151,9 @@ func AccountCount(db *sqlx.DB, filter Filter) (count int) {
 	return
 }
 
-func ItemCount(db *sqlx.DB, filter Filter) (count int) {
+func ItemCount(db interface{}, filter Filter) (count int) {
 	filter.Defaults()
-	err := db.Get(&count, `SELECT COUNT(*) FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
+	err := sql.Get(db, &count, `SELECT COUNT(*) FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
 		filter.From.Unix(), filter.To.Unix())
 	if err != nil {
 		log.Printf("[ERROR] effect.ItemCount(): %s", err)
@@ -162,9 +161,9 @@ func ItemCount(db *sqlx.DB, filter Filter) (count int) {
 	return
 }
 
-func Get(db *sqlx.DB, filter Filter) (effects []Effect, err error) {
+func Get(db interface{}, filter Filter) (effects []Effect, err error) {
 	filter.Defaults()
-	err = db.Select(&effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestsamp AND $2::timestsamp`,
+	err = sql.Select(db, &effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestsamp AND $2::timestsamp`,
 		filter.From.Unix(), filter.To.Unix())
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] effect.Get(): %s", err)

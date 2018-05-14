@@ -2,7 +2,7 @@ package cursor
 
 import (
 	"errors"
-	"github.com/jmoiron/sqlx"
+	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
 )
 
@@ -13,14 +13,14 @@ type Cursor struct {
 	PagingToken *string `db:"paging_token" json:"paging_token,omitempty"`
 }
 
-func New(db *sqlx.DB, cursor string) (err error) {
-	_, err = db.Exec(`UPDATE cursors SET paging_token=$1 WHERE id=1`, cursor)
+func New(db interface{}, cursor string) (err error) {
+	_, err = sql.Exec(db, `UPDATE cursors SET paging_token=$1 WHERE id=1`, cursor)
 	return
 }
 
-func GetLatest(db *sqlx.DB) (cursor horizon.Cursor, err error) {
+func GetLatest(db interface{}) (cursor horizon.Cursor, err error) {
 	var c string
-	err = db.Get(&c, `SELECT paging_token FROM cursors WHERE id=1`)
+	err = sql.Get(db, &c, `SELECT paging_token FROM cursors WHERE id=1`)
 	if err != nil {
 		return
 	}
