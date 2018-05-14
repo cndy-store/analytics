@@ -10,13 +10,13 @@ CREATE TABLE effects (
   id SERIAL PRIMARY KEY,
   effect_id VARCHAR(128),
   operation VARCHAR(128),
-  succeeds VARCHAR(128), -- Currently not used
-  precedes VARCHAR(128), -- Currently not used
+  succeeds VARCHAR(128),
+  precedes VARCHAR(128),
   paging_token VARCHAR(128),
   account VARCHAR(128),
   amount REAL,
   type VARCHAR(128),
-  type_i INTEGER, -- Currently not used
+  type_i INTEGER,
   starting_balance VARCHAR(128),
 
   balance VARCHAR(128),
@@ -26,7 +26,6 @@ CREATE TABLE effects (
   asset_code VARCHAR(128),
   asset_issuer VARCHAR(128),
 
-  -- These fields are currently not used
   signer_public_key VARCHAR(128),
   signer_weight INTEGER,
   signer_key VARCHAR(128),

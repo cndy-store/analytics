@@ -14,13 +14,13 @@ type Effect struct {
 	Id              *uint32  `db:"id"               json:"-"`
 	EffectId        *string  `db:"effect_id"        json:"id,omitempty"`
 	Operation       *string  `db:"operation"        json:"operation,omitempty"`
-	Succeeds        *string  `db:"succeeds"         json:"succeeds,omitempty"` // Currently not used
-	Precedes        *string  `db:"precedes"         json:"precedes,omitempty"` // Currently not used
+	Succeeds        *string  `db:"succeeds"         json:"succeeds,omitempty"`
+	Precedes        *string  `db:"precedes"         json:"precedes,omitempty"`
 	PagingToken     *string  `db:"paging_token"     json:"paging_token,omitempty"`
 	Account         *string  `db:"account"          json:"account,omitempty"`
 	Amount          *float32 `db:"amount"           json:"amount,omitempty"`
 	Type            *string  `db:"type"             json:"type,omitempty"`
-	TypeI           *int32   `db:"type_i"           json:"type_i,omitempty"` // Currently not used
+	TypeI           *int32   `db:"type_i"           json:"type_i,omitempty"`
 	StartingBalance *string  `db:"starting_balance" json:"starting_balance,omitempty"`
 
 	Balance      *string `db:"balance"       json:"balance,omitempty"`
@@ -59,10 +59,31 @@ func New(db interface{}, effect horizon.Effect) (err error) {
 	}
 
 	// Just input the fields we're requiring for now, can be replayed anytime form the chain later.
-	_, err = sql.Exec(db, `INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, starting_balance, balance, balance_limit, asset_type, asset_issuer, asset_code, created_at)
-		VALUES($1, $2, $3, $4, $5::REAL, $6, $7, $8, $9, $10, $11, $12, $13)`,
-		effect.ID, effect.Links.Operation.Href, effect.PT, effect.Account, effect.Amount, effect.Type, effect.StartingBalance, effect.Balance.Balance, effect.Balance.Limit,
-		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code, operation.CreatedAt)
+	_, err = sql.Exec(db, `INSERT INTO effects(
+			effect_id,
+			operation, succeeds, precedes,
+			paging_token, account, amount, type, type_i, starting_balance,
+			balance, balance_limit,
+			asset_type, asset_issuer, asset_code,
+			signer_public_key, signer_weight, signer_key, signer_type,
+			created_at
+		)
+		VALUES(
+			$1,
+			$2, $3, $4,
+			$5, $6, $7::REAL, $8, $9, $10,
+			$11, $12,
+			$13, $14, $15,
+			$16, $17, $18, $19,
+			$20
+		)`,
+		effect.ID,
+		effect.Links.Operation.Href, effect.Links.Succeeds.Href, effect.Links.Precedes.Href,
+		effect.PT, effect.Account, effect.Amount, effect.Type, effect.TypeI, effect.StartingBalance,
+		effect.Balance.Balance, effect.Balance.Limit,
+		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code,
+		effect.Signer.PublicKey, effect.Signer.Weight, effect.Signer.Key, effect.Signer.Type,
+		operation.CreatedAt)
 	if err != nil {
 		return
 	}
