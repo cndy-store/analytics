@@ -107,7 +107,7 @@ func TotalAmount(db interface{}, filter Filter) (amount float64) {
 		return
 	}
 
-	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestsamp AND $3::timestsamp`,
+	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
 		filter.Type, filter.From, filter.To)
 	if err != nil {
 		log.Print(err)
@@ -118,7 +118,7 @@ func TotalAmount(db interface{}, filter Filter) (amount float64) {
 // Total assets issued
 func TotalIssued(db interface{}, issuer string, filter Filter) (amount float64) {
 	filter.Defaults()
-	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestsamp AND $3::timestamp`,
+	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
 		issuer, filter.From, filter.To)
 	if err != nil {
 		log.Print(err)
@@ -163,7 +163,7 @@ func ItemCount(db interface{}, filter Filter) (count int) {
 
 func Get(db interface{}, filter Filter) (effects []Effect, err error) {
 	filter.Defaults()
-	err = sql.Select(db, &effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestsamp AND $2::timestsamp`,
+	err = sql.Select(db, &effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
 		filter.From, filter.To)
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] effect.Get(): %s", err)
