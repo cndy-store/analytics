@@ -4,7 +4,7 @@ services:
     image: postgres:10-alpine
     environment:
       - POSTGRES_USER=cndy
-      - POSTGRES_DB=cndy
+      - POSTGRES_DB=cndy_test
 
   cndy-analytics:
     build: ./
@@ -14,7 +14,7 @@ services:
     environment:
       - PGHOST=postgres
       - PGUSER=cndy
-      - PGDATABASE=cndy
+      - PGDATABASE=cndy_test
       - PGSSLMODE=disable
     depends_on:
       - postgres

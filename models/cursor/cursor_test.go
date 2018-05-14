@@ -3,8 +3,17 @@ package cursor
 import (
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
+	"os"
 	"testing"
 )
+
+func init() {
+	// Make sure the test database is used
+	err := os.Setenv("PGDATABASE", "cndy_test")
+	if err != nil {
+		panic(err)
+	}
+}
 
 func TestGenesisCursor(t *testing.T) {
 	db, err := sql.ResetDB("../../")
