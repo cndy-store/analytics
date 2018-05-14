@@ -53,7 +53,7 @@ func Get(db interface{}, filter Filter) (stats []AssetStat, err error) {
 	filter.Defaults()
 	// TODO: Migrate to postgres
 	err = sql.Select(db, &stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
-		filter.From.Unix(), filter.To.Unix())
+		filter.From, filter.To)
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] asset_stat.Get(): %s", err)
 	}

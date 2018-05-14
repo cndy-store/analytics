@@ -108,7 +108,7 @@ func TotalAmount(db interface{}, filter Filter) (amount float64) {
 	}
 
 	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestsamp AND $3::timestsamp`,
-		filter.Type, filter.From.Unix(), filter.To.Unix())
+		filter.Type, filter.From, filter.To)
 	if err != nil {
 		log.Print(err)
 	}
@@ -119,7 +119,7 @@ func TotalAmount(db interface{}, filter Filter) (amount float64) {
 func TotalIssued(db interface{}, issuer string, filter Filter) (amount float64) {
 	filter.Defaults()
 	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestsamp AND $3::timestamp`,
-		issuer, filter.From.Unix(), filter.To.Unix())
+		issuer, filter.From, filter.To)
 	if err != nil {
 		log.Print(err)
 	}
@@ -134,7 +134,7 @@ func TotalCount(db interface{}, filter Filter) (count int) {
 	}
 
 	err := sql.Get(db, &count, `SELECT COUNT(*) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
-		filter.Type, filter.From.Unix(), filter.To.Unix())
+		filter.Type, filter.From, filter.To)
 	if err != nil {
 		log.Printf("[ERROR] effect.TotalCount(): %s", err)
 	}
@@ -144,7 +144,7 @@ func TotalCount(db interface{}, filter Filter) (count int) {
 func AccountCount(db interface{}, filter Filter) (count int) {
 	filter.Defaults()
 	err := sql.Get(db, &count, `SELECT COUNT(DISTINCT account) FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
-		filter.From.Unix(), filter.To.Unix())
+		filter.From, filter.To)
 	if err != nil {
 		log.Printf("[ERROR] effect.AccountCount(): %s", err)
 	}
@@ -154,7 +154,7 @@ func AccountCount(db interface{}, filter Filter) (count int) {
 func ItemCount(db interface{}, filter Filter) (count int) {
 	filter.Defaults()
 	err := sql.Get(db, &count, `SELECT COUNT(*) FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp`,
-		filter.From.Unix(), filter.To.Unix())
+		filter.From, filter.To)
 	if err != nil {
 		log.Printf("[ERROR] effect.ItemCount(): %s", err)
 	}
@@ -164,7 +164,7 @@ func ItemCount(db interface{}, filter Filter) (count int) {
 func Get(db interface{}, filter Filter) (effects []Effect, err error) {
 	filter.Defaults()
 	err = sql.Select(db, &effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestsamp AND $2::timestsamp`,
-		filter.From.Unix(), filter.To.Unix())
+		filter.From, filter.To)
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] effect.Get(): %s", err)
 	}

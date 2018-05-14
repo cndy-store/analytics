@@ -13,7 +13,7 @@ import (
 var ErrNoRows = sql.ErrNoRows
 
 // Open production database and run migrations
-func OpenAndMigrate() (db *sqlx.DB, err error) {
+func OpenAndMigrate(relPath string) (db *sqlx.DB, err error) {
 	/* Open connection to postgresql to the server specified in the following environment variables:
 	 *
 	 * PGHOST=127.0.0.1
@@ -31,37 +31,7 @@ func OpenAndMigrate() (db *sqlx.DB, err error) {
 		return
 	}
 
-	m, err := migrate.NewWithDatabaseInstance("file://db/migrations", "postgres", driver)
-	if err != nil {
-		return
-	}
-
-	err = m.Up()
-	if err == migrate.ErrNoChange {
-		err = nil
-	}
-
-	return
-}
-
-// Delete and re-create test database, run migrations and insert test data
-func ResetDB(relPath string) (db *sqlx.DB, err error) {
-	db, err = sqlx.Open("postgres", "postgres://")
-	if err != nil {
-		return
-	}
-
-	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
-	if err != nil {
-		return
-	}
-
-	m, err := migrate.NewWithDatabaseInstance("file://"+relPath+"/db/migrations", "postgres", driver)
-	if err != nil {
-		return
-	}
-
-	err = m.Drop()
+	m, err := migrate.NewWithDatabaseInstance("file://"+relPath+"db/migrations", "postgres", driver)
 	if err != nil {
 		return
 	}

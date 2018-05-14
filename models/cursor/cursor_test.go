@@ -3,23 +3,20 @@ package cursor
 import (
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
-	"os"
 	"testing"
 )
 
-func init() {
-	// Make sure the test database is used
-	err := os.Setenv("PGDATABASE", "cndy_test")
-	if err != nil {
-		panic(err)
-	}
-}
-
 func TestGenesisCursor(t *testing.T) {
-	db, err := sql.ResetDB("../../")
+	db, err := sql.OpenAndMigrate("../../")
 	if err != nil {
 		t.Error(err)
 	}
+
+	tx, err := db.Beginx()
+	if err != nil {
+		t.Error(err)
+	}
+	defer tx.Rollback()
 
 	genesisCursor := horizon.Cursor("33819440072110101-2") // See db/migrations/0001_initial.up.sql
 
@@ -34,10 +31,16 @@ func TestGenesisCursor(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	db, err := sql.ResetDB("../../")
+	db, err := sql.OpenAndMigrate("../../")
 	if err != nil {
 		t.Error(err)
 	}
+
+	tx, err := db.Beginx()
+	if err != nil {
+		t.Error(err)
+	}
+	defer tx.Rollback()
 
 	newCursor := "33819440072111111-1"
 
