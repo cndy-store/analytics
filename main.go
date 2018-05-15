@@ -21,7 +21,7 @@ const ASSET_CODE = "CNDY"
 const ASSET_ISSUER = "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX"
 
 func main() {
-	db, err := sql.OpenAndMigrate(".")
+	db, err := sql.OpenAndMigrate("./")
 	if err != nil {
 		log.Fatal("[ERROR] Couldn't open database: ", err)
 	}
