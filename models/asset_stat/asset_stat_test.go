@@ -8,15 +8,16 @@ import (
 
 func TestGet(t *testing.T) {
 	var datasets = []struct {
+		PagingToken string
 		TotalAmount string
 		NumAccounts int32
 		NumEffects  int32
 		CreatedAt   time.Time
 	}{
-		{"1000", 10, 50, time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
-		{"1000", 12, 60, time.Date(2018, time.March, 14, 0, 0, 0, 0, time.UTC)},
-		{"2000", 15, 70, time.Date(2018, time.March, 16, 0, 0, 0, 0, time.UTC)},
-		{"2000", 22, 80, time.Date(2018, time.March, 18, 0, 0, 0, 0, time.UTC)},
+		{"33819440072110101-0", "1000", 10, 50, time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
+		{"33819440072110101-1", "1000", 12, 60, time.Date(2018, time.March, 14, 0, 0, 0, 0, time.UTC)},
+		{"33819440072110101-2", "2000", 15, 70, time.Date(2018, time.March, 16, 0, 0, 0, 0, time.UTC)},
+		{"33819440072110101-3", "2000", 22, 80, time.Date(2018, time.March, 18, 0, 0, 0, 0, time.UTC)},
 	}
 
 	db, err := sql.OpenAndMigrate("../../")
@@ -32,8 +33,8 @@ func TestGet(t *testing.T) {
 
 	for _, data := range datasets {
 		_, err = tx.Exec(`INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, total_amount, num_accounts, num_effects, created_at)
-			              VALUES('33819440072110101-1', 'CNDY', 'GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX', 'credit_alphanum4', $1, $2, $3, $4)`,
-			data.TotalAmount, data.NumAccounts, data.NumEffects, data.CreatedAt)
+			              VALUES($1, 'CNDY', 'GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX', 'credit_alphanum4', $2, $3, $4, $5)`,
+			data.PagingToken, data.TotalAmount, data.NumAccounts, data.NumEffects, data.CreatedAt)
 		if err != nil {
 			t.Error(err)
 		}
