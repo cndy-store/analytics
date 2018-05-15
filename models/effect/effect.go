@@ -4,34 +4,35 @@ import (
 	"encoding/json"
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/utils/sql"
+	"github.com/stellar/go/amount"
 	"github.com/stellar/go/clients/horizon"
 	"log"
+	"math/big"
 	"net/http"
 	"time"
 )
 
 type Effect struct {
-	Id              *uint32  `db:"id"               json:"-"`
-	EffectId        *string  `db:"effect_id"        json:"id,omitempty"`
-	Operation       *string  `db:"operation"        json:"operation,omitempty"`
-	Succeeds        *string  `db:"succeeds"         json:"succeeds,omitempty"`
-	Precedes        *string  `db:"precedes"         json:"precedes,omitempty"`
-	PagingToken     *string  `db:"paging_token"     json:"paging_token,omitempty"`
-	Account         *string  `db:"account"          json:"account,omitempty"`
-	Amount          *float32 `db:"amount"           json:"amount,omitempty"`
-	Type            *string  `db:"type"             json:"type,omitempty"`
-	TypeI           *int32   `db:"type_i"           json:"type_i,omitempty"`
-	StartingBalance *string  `db:"starting_balance" json:"starting_balance,omitempty"`
+	EffectId        *string `db:"effect_id"        json:"id,omitempty"`
+	Operation       *string `db:"operation"        json:"operation,omitempty"`
+	Succeeds        *string `db:"succeeds"         json:"succeeds,omitempty"`
+	Precedes        *string `db:"precedes"         json:"precedes,omitempty"`
+	PagingToken     *string `db:"paging_token"     json:"paging_token,omitempty"`
+	Account         *string `db:"account"          json:"account,omitempty"`
+	Amount          *int64  `db:"amount"           json:"amount,omitempty"`
+	Type            *string `db:"type"             json:"type,omitempty"`
+	TypeI           *int32  `db:"type_i"           json:"type_i,omitempty"`
+	StartingBalance *string `db:"starting_balance" json:"starting_balance,omitempty"`
 
-	Balance      *string `db:"balance"       json:"balance,omitempty"`
-	BalanceLimit *string `db:"balance_limit" json:"balance_limit,omitempty"`
+	Balance      *int64 `db:"balance"       json:"balance,omitempty"`
+	BalanceLimit *int64 `db:"balance_limit" json:"balance_limit,omitempty"`
 
 	AssetType   *string `db:"asset_type"   json:"asset_type,omitempty"`
 	AssetCode   *string `db:"asset_code"   json:"asset_code,omitempty"`
 	AssetIssuer *string `db:"asset_issuer" json:"asset_issuer,omitempty"`
 
 	SignerPublicKey *string `db:"signer_public_key" json:"signer_public_key,omitempty"`
-	SignerWeight    *string `db:"signer_weight"     json:"signer_weight,omitempty"`
+	SignerWeight    *int32  `db:"signer_weight"     json:"signer_weight,omitempty"`
 	SignerKey       *string `db:"signer_key"        json:"signer_key,omitempty"`
 	SignerType      *string `db:"signer_type"       json:"signer_type,omitempty"`
 
@@ -54,7 +55,21 @@ func New(db interface{}, effect horizon.Effect) (err error) {
 	// https://stellar.stackexchange.com/questions/1036/why-are-overspending-transactions-added-to-the-ledger
 	if operation.To == operation.From && (effect.Asset.Type == "account_credited" || effect.Asset.Type == "account_debited") {
 		log.Printf("[WARN] Found effect where sender and receiver are the same account, ignoring.")
-		log.Printf("       Debug: %v", effect)
+		log.Printf("[DEBUG] %+v", effect)
+		return
+	}
+
+	// Parse strings into integers
+	parsedAmount, err := parseInt64(effect.Amount)
+	if err != nil {
+		return
+	}
+	parsedBalance, err := parseInt64(effect.Balance.Balance)
+	if err != nil {
+		return
+	}
+	parsedBalanceLimit, err := parseInt64(effect.Balance.Limit)
+	if err != nil {
 		return
 	}
 
@@ -71,7 +86,7 @@ func New(db interface{}, effect horizon.Effect) (err error) {
 		VALUES(
 			$1,
 			$2, $3, $4,
-			$5, $6, $7::REAL, $8, $9, $10,
+			$5, $6, $7, $8, $9, $10,
 			$11, $12,
 			$13, $14, $15,
 			$16, $17, $18, $19,
@@ -79,8 +94,8 @@ func New(db interface{}, effect horizon.Effect) (err error) {
 		)`,
 		effect.ID,
 		effect.Links.Operation.Href, effect.Links.Succeeds.Href, effect.Links.Precedes.Href,
-		effect.PT, effect.Account, effect.Amount, effect.Type, effect.TypeI, effect.StartingBalance,
-		effect.Balance.Balance, effect.Balance.Limit,
+		effect.PT, effect.Account, parsedAmount, effect.Type, effect.TypeI, effect.StartingBalance,
+		parsedBalance, parsedBalanceLimit,
 		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code,
 		effect.Signer.PublicKey, effect.Signer.Weight, effect.Signer.Key, effect.Signer.Type,
 		operation.CreatedAt)
@@ -88,7 +103,7 @@ func New(db interface{}, effect horizon.Effect) (err error) {
 		return
 	}
 
-	// Store amount_transfered and amount_issued upon insert in a different table
+	// Store asset stats upon insert in a different table
 	err = assetStat.New(db, effect, operation.CreatedAt)
 	if err != nil {
 		return
@@ -121,30 +136,37 @@ func (f *Filter) Defaults() {
 	}
 }
 
-func TotalAmount(db interface{}, filter Filter) (amount float64) {
+func TotalAmount(db interface{}, filter Filter) string {
 	filter.Defaults()
 	if filter.Type == "" {
 		log.Printf("[ERROR] effect.TotalAmount(): No type given.")
-		return
+		return ""
 	}
 
-	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
+	var a int64
+	err := sql.Get(db, &a, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
 		filter.Type, filter.From, filter.To)
 	if err != nil {
 		log.Print(err)
+		return ""
 	}
-	return
+
+	return stringFromInt64(a)
 }
 
 // Total assets issued
-func TotalIssued(db interface{}, issuer string, filter Filter) (amount float64) {
+func TotalIssued(db interface{}, issuer string, filter Filter) string {
 	filter.Defaults()
-	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
+
+	var a int64
+	err := sql.Get(db, &a, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
 		issuer, filter.From, filter.To)
 	if err != nil {
 		log.Print(err)
+		return ""
 	}
-	return
+
+	return stringFromInt64(a)
 }
 
 func TotalCount(db interface{}, filter Filter) (count int) {
@@ -209,4 +231,25 @@ func getOperation(url string) (op Operation) {
 		return
 	}
 	return
+}
+
+func parseInt64(s string) (*int64, error) {
+	// Prase empty strings as nil
+	if s == "" {
+		zero := int64(0)
+		return &zero, nil
+	}
+
+	p, err := amount.ParseInt64(s)
+	return &p, err
+}
+
+// stringFromInt64 returns an "amount string" from the provided raw int64 value `v`.
+// Taken from: github.com/stellar/go/amount/main.go
+func stringFromInt64(v int64) string {
+	One := int64(10000000)
+	bigOne := big.NewRat(One, 1)
+	r := big.NewRat(v, 1)
+	r.Quo(r, bigOne)
+	return r.FloatString(7)
 }
