@@ -20,7 +20,7 @@ func TestGenesisCursor(t *testing.T) {
 
 	genesisCursor := horizon.Cursor("33819440072110101-2") // See db/migrations/0001_initial.up.sql
 
-	currentCursor, err := GetLatest(db)
+	currentCursor, err := GetLatest(tx)
 	if err != nil {
 		t.Errorf("cursor.GetLatest(): %s", err)
 	}
@@ -44,12 +44,12 @@ func TestNew(t *testing.T) {
 
 	newCursor := "33819440072111111-1"
 
-	err = New(db, newCursor)
+	err = New(tx, newCursor)
 	if err != nil {
 		t.Errorf("cursor.New(): %s", err)
 	}
 
-	currentCursor, err := GetLatest(db)
+	currentCursor, err := GetLatest(tx)
 	if err != nil {
 		t.Errorf("cursor.GetLastest(): %s", err)
 	}
