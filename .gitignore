@@ -1,3 +1,5 @@
 /main
 /analytics
 /vendor
+.env
+.envrc
