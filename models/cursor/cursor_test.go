@@ -7,7 +7,7 @@ import (
 )
 
 func TestGenesisCursor(t *testing.T) {
-	db, err := sql.OpenAndMigrate("../../")
+	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
 	}
@@ -31,7 +31,7 @@ func TestGenesisCursor(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	db, err := sql.OpenAndMigrate("../../")
+	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
 	}

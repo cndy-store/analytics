@@ -27,7 +27,7 @@ var datasets = []struct {
 }
 
 func TestNew(t *testing.T) {
-	db, err := sql.OpenAndMigrate("../../")
+	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
 	}
@@ -182,7 +182,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	db, err := sql.OpenAndMigrate("../../")
+	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
 	}
@@ -260,7 +260,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestAccountCount(t *testing.T) {
-	db, err := sql.OpenAndMigrate("../../")
+	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
 	}
@@ -302,7 +302,7 @@ func TestAccountCount(t *testing.T) {
 }
 
 func TestTotalIssued(t *testing.T) {
-	db, err := sql.OpenAndMigrate("../../")
+	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
 	}
@@ -344,7 +344,7 @@ func TestTotalIssued(t *testing.T) {
 }
 
 func TestTotalAmount(t *testing.T) {
-	db, err := sql.OpenAndMigrate("../../")
+	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
 	}
@@ -386,7 +386,7 @@ func TestTotalAmount(t *testing.T) {
 }
 
 func TestTotalCount(t *testing.T) {
-	db, err := sql.OpenAndMigrate("../../")
+	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
 	}
@@ -428,7 +428,7 @@ func TestTotalCount(t *testing.T) {
 }
 
 func TestItemCount(t *testing.T) {
-	db, err := sql.OpenAndMigrate("../../")
+	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
 	}

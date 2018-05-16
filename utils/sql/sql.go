@@ -31,7 +31,7 @@ func OpenAndMigrate(relPath string) (db *sqlx.DB, err error) {
 		return
 	}
 
-	m, err := migrate.NewWithDatabaseInstance("file://"+relPath+"db/migrations", "postgres", driver)
+	m, err := migrate.NewWithDatabaseInstance("file://"+relPath+"/db/migrations", "postgres", driver)
 	if err != nil {
 		return
 	}

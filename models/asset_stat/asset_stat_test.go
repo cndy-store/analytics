@@ -20,7 +20,7 @@ func TestGet(t *testing.T) {
 		{"33819440072110101-3", "2000", 22, 80, time.Date(2018, time.March, 18, 0, 0, 0, 0, time.UTC)},
 	}
 
-	db, err := sql.OpenAndMigrate("../../")
+	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
 	}
