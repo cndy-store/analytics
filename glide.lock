@@ -1,5 +1,5 @@
 hash: 7dc1526bc69405c0f56f59d7be92a398a6ffb50eab39320072dad78909e82fb6
-updated: 2018-05-13T00:36:29.406646+02:00
+updated: 2018-05-16T09:34:58.466804+02:00
 imports:
 - name: github.com/agl/ed25519
   version: 278e1ec8e8a6e017cd07577924d6766039146ced
@@ -69,7 +69,7 @@ imports:
   subpackages:
   - hooks/test
 - name: github.com/stellar/go
-  version: a5618c734e920054d80ed88a0d35cdcec0ec1302
+  version: 199cece79aa7a98850765d9783da7a31fc010e4a
   repo: https://github.com/chr4/go-stellar-sdk
   subpackages:
   - amount
