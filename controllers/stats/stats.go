@@ -7,12 +7,11 @@ import (
 	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	"log"
 	"net/http"
 )
 
-func Init(db *sqlx.DB, router *gin.Engine) {
+func Init(db interface{}, router *gin.Engine) {
 	// GET /cndy/stats[?from=XXX&to=XXX]
 	router.GET("/stats", func(c *gin.Context) {
 		from, to, err := filter.Parse(c)
