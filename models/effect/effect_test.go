@@ -490,3 +490,19 @@ func insertData(tx interface{}) (err error) {
 
 	return
 }
+
+func TestConvert(t *testing.T) {
+	amount := int64(500000000)
+	effect := Effect{Amount: &amount, Balance: &amount, BalanceLimit: &amount}
+	effect.Convert()
+
+	if *effect.JsonAmount != "50.0000000" {
+		t.Errorf("Expected 50.0000000, got %s", *effect.JsonAmount)
+	}
+	if *effect.JsonBalance != "50.0000000" {
+		t.Errorf("Expected 50.0000000, got %s", *effect.JsonBalance)
+	}
+	if *effect.JsonBalanceLimit != "50.0000000" {
+		t.Errorf("Expected 50.0000000, got %s", *effect.JsonBalanceLimit)
+	}
+}

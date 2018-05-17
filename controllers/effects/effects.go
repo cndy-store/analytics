@@ -29,6 +29,11 @@ func Init(db *sqlx.DB, router *gin.Engine) {
 			return
 		}
 
+		// Convert int64 fields to strings
+		for i, _ := range effects {
+			effects[i].Convert()
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"effects": effects,
 		})

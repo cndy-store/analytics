@@ -94,3 +94,13 @@ func TestGet(t *testing.T) {
 		t.Errorf("Expected num_accounts to be %d got: %d", datasets[2].NumAccounts, *assetStats[1].NumAccounts)
 	}
 }
+
+func TestConvert(t *testing.T) {
+	amount := int64(500000000)
+	assetStat := AssetStat{TotalAmount: &amount}
+	assetStat.Convert()
+
+	if *assetStat.JsonTotalAmount != "50.0000000" {
+		t.Errorf("Expected 50.0000000, got %s", *assetStat.JsonTotalAmount)
+	}
+}

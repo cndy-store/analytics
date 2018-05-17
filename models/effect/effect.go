@@ -18,13 +18,13 @@ type Effect struct {
 	Precedes        *string `db:"precedes"         json:"precedes,omitempty"`
 	PagingToken     *string `db:"paging_token"     json:"paging_token,omitempty"`
 	Account         *string `db:"account"          json:"account,omitempty"`
-	Amount          *int64  `db:"amount"           json:"amount,omitempty"`
+	Amount          *int64  `db:"amount"           json:"-"`
 	Type            *string `db:"type"             json:"type,omitempty"`
 	TypeI           *int32  `db:"type_i"           json:"type_i,omitempty"`
 	StartingBalance *string `db:"starting_balance" json:"starting_balance,omitempty"`
 
-	Balance      *int64 `db:"balance"       json:"balance,omitempty"`
-	BalanceLimit *int64 `db:"balance_limit" json:"balance_limit,omitempty"`
+	Balance      *int64 `db:"balance"       json:"-"`
+	BalanceLimit *int64 `db:"balance_limit" json:"-"`
 
 	AssetType   *string `db:"asset_type"   json:"asset_type,omitempty"`
 	AssetCode   *string `db:"asset_code"   json:"asset_code,omitempty"`
@@ -36,6 +36,11 @@ type Effect struct {
 	SignerType      *string `db:"signer_type"       json:"signer_type,omitempty"`
 
 	CreatedAt *time.Time `db:"created_at"  json:"created_at,omitempty"`
+
+	// These fields are used by .Convert()
+	JsonAmount       *string `db:"-" json:"amount,omitempty"`
+	JsonBalance      *string `db:"-" json:"balance,omitempty"`
+	JsonBalanceLimit *string `db:"-" json:"balance_limit,omitempty"`
 }
 
 type Operation struct {
@@ -209,6 +214,24 @@ func Get(db interface{}, filter Filter) (effects []Effect, err error) {
 		log.Printf("[ERROR] effect.Get(): %s", err)
 	}
 	return
+}
+
+// Convert int64 fields of to strings
+func (e *Effect) Convert() {
+	if e.Amount != nil {
+		amount := bigint.ToString(*e.Amount)
+		e.JsonAmount = &amount
+	}
+
+	if e.Balance != nil {
+		balance := bigint.ToString(*e.Balance)
+		e.JsonBalance = &balance
+	}
+
+	if e.BalanceLimit != nil {
+		balanceLimit := bigint.ToString(*e.BalanceLimit)
+		e.JsonBalanceLimit = &balanceLimit
+	}
 }
 
 func getOperation(url string) (op Operation) {
