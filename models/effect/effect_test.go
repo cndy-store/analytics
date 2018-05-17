@@ -81,6 +81,7 @@ func TestNew(t *testing.T) {
 	effect.Links.Succeeds = succeeds
 	effect.Links.Precedes = precedes
 
+	// TODO: Mock effect.GetOperationTime()
 	err = New(tx, effect)
 	if err != nil {
 		t.Error(err)
@@ -321,26 +322,26 @@ func TestTotalIssued(t *testing.T) {
 
 	// Filter{}
 	count := TotalIssued(tx, "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX", Filter{})
-	if count != "1100.0000000" {
-		t.Errorf("Expected 1100.0000000 got %s", count)
+	if count != 11000000000 {
+		t.Errorf("Expected 1100.0000000 got %d", count)
 	}
 
 	// Filter{From}
 	count = TotalIssued(tx, "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX", Filter{From: &datasets[4].CreatedAt})
-	if count != "100.0000000" {
-		t.Errorf("Expected 100.0000000 got %s", count)
+	if count != 1000000000 {
+		t.Errorf("Expected 100.0000000 got %d", count)
 	}
 
 	// Filter{To}
 	count = TotalIssued(tx, "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX", Filter{To: &datasets[4].CreatedAt})
-	if count != "1000.0000000" {
-		t.Errorf("Expected 1000.0000000 got %s", count)
+	if count != 10000000000 {
+		t.Errorf("Expected 1000.0000000 got %d", count)
 	}
 
 	// Filter{From, To}
 	count = TotalIssued(tx, "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX", Filter{From: &datasets[1].CreatedAt, To: &datasets[3].CreatedAt})
-	if count != "1000.0000000" {
-		t.Errorf("Expected 1000.0000000 got %s", count)
+	if count != 10000000000 {
+		t.Errorf("Expected 1000.0000000 got %d", count)
 	}
 }
 
@@ -363,26 +364,26 @@ func TestTotalAmount(t *testing.T) {
 
 	// Filter{}
 	count := TotalAmount(tx, Filter{Type: "account_credited"})
-	if count != "1115.0000000" {
-		t.Errorf("Expected 1115.0000000 got %s", count)
+	if count != 11150000000 {
+		t.Errorf("Expected 1115.0000000 got %d", count)
 	}
 
 	// Filter{From}
 	count = TotalAmount(tx, Filter{Type: "account_credited", From: &datasets[4].CreatedAt})
-	if count != "115.0000000" {
-		t.Errorf("Expected 115.0000000 got %s", count)
+	if count != 1150000000 {
+		t.Errorf("Expected 115.0000000 got %d", count)
 	}
 
 	// Filter{To}
 	count = TotalAmount(tx, Filter{Type: "account_credited", To: &datasets[4].CreatedAt})
-	if count != "1015.0000000" {
-		t.Errorf("Expected 1015.0000000 got %s", count)
+	if count != 10150000000 {
+		t.Errorf("Expected 1015.0000000 got %d", count)
 	}
 
 	// Filter{From, To}
 	count = TotalAmount(tx, Filter{Type: "account_credited", From: &datasets[1].CreatedAt, To: &datasets[3].CreatedAt})
-	if count != "1000.0000000" {
-		t.Errorf("Expected 1000.0000000 got %s", count)
+	if count != 10000000000 {
+		t.Errorf("Expected 1000.0000000 got %d", count)
 	}
 }
 

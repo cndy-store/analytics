@@ -3,6 +3,7 @@ package stats
 import (
 	"github.com/cndy-store/analytics/models/cursor"
 	"github.com/cndy-store/analytics/models/effect"
+	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/gin-gonic/gin"
@@ -33,9 +34,9 @@ func Init(db *sqlx.DB, router *gin.Engine) {
 			"asset_code":         cndy.AssetCode,
 			"effect_count":       effect.ItemCount(db, effect.Filter{From: from, To: to}),
 			"accounts_involved":  effect.AccountCount(db, effect.Filter{From: from, To: to}),
-			"amount_transferred": effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to}),
+			"amount_transferred": bigint.ToString(effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to})),
 			"trustlines_created": effect.TotalCount(db, effect.Filter{Type: "trustline_created", From: from, To: to}),
-			"amount_issued":      effect.TotalIssued(db, cndy.AssetIssuer, effect.Filter{From: from, To: to}),
+			"amount_issued":      bigint.ToString(effect.TotalIssued(db, cndy.AssetIssuer, effect.Filter{From: from, To: to})),
 			"current_cursor":     currentCursor,
 		})
 		return
