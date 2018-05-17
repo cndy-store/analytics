@@ -135,37 +135,35 @@ func (f *Filter) Defaults() {
 	}
 }
 
-func TotalAmount(db interface{}, filter Filter) string {
+func TotalAmount(db interface{}, filter Filter) (amount int64) {
 	filter.Defaults()
 	if filter.Type == "" {
 		log.Printf("[ERROR] effect.TotalAmount(): No type given.")
-		return ""
+		return
 	}
 
-	var a int64
-	err := sql.Get(db, &a, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
+	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
 		filter.Type, filter.From, filter.To)
 	if err != nil {
 		log.Print(err)
-		return ""
+		return
 	}
 
-	return bigint.ToString(a)
+	return
 }
 
 // Total assets issued
-func TotalIssued(db interface{}, issuer string, filter Filter) string {
+func TotalIssued(db interface{}, issuer string, filter Filter) (issued int64) {
 	filter.Defaults()
 
-	var a int64
-	err := sql.Get(db, &a, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
+	err := sql.Get(db, &issued, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
 		issuer, filter.From, filter.To)
 	if err != nil {
 		log.Print(err)
-		return ""
+		return
 	}
 
-	return bigint.ToString(a)
+	return
 }
 
 func TotalCount(db interface{}, filter Filter) (count int) {
