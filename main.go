@@ -1,11 +1,11 @@
 package main
 
 import (
-	"errors"
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/models/cursor"
 	"github.com/cndy-store/analytics/models/effect"
 	"github.com/cndy-store/analytics/utils/cndy"
+	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -60,7 +60,7 @@ func api(db *sqlx.DB) {
 
 	// GET /cndy/stats[?from=XXX&to=XXX]
 	router.GET("/stats", func(c *gin.Context) {
-		from, to, err := getFromAndTo(c)
+		from, to, err := filter.Parse(c)
 		if err != nil {
 			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -89,7 +89,7 @@ func api(db *sqlx.DB) {
 
 	// GET /effects[?from=XXX&to=XXX]
 	router.GET("/effects", func(c *gin.Context) {
-		from, to, err := getFromAndTo(c)
+		from, to, err := filter.Parse(c)
 		if err != nil {
 			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -114,7 +114,7 @@ func api(db *sqlx.DB) {
 
 	// GET /history[?from=XXX&to=XXX]
 	router.GET("/history", func(c *gin.Context) {
-		from, to, err := getFromAndTo(c)
+		from, to, err := filter.Parse(c)
 		if err != nil {
 			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -138,26 +138,4 @@ func api(db *sqlx.DB) {
 	})
 
 	router.Run(":3144")
-}
-
-func getFromAndTo(c *gin.Context) (from *time.Time, to *time.Time, err error) {
-	if query := c.Query("from"); query != "" {
-		t, e := time.Parse(time.RFC3339, query)
-		if e != nil {
-			err = errors.New("Invalid date in 'from' parameter.")
-			return
-		}
-		from = &t
-	}
-
-	if query := c.Query("to"); query != "" {
-		t, e := time.Parse(time.RFC3339, query)
-		if e != nil {
-			err = errors.New("Invalid date in 'to' parameter.")
-			return
-		}
-		to = &t
-	}
-
-	return
 }
