@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/cndy-store/analytics/controllers/stats"
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/models/cursor"
 	"github.com/cndy-store/analytics/models/effect"
@@ -57,35 +58,7 @@ func main() {
 func api(db *sqlx.DB) {
 	router := gin.Default()
 	router.Use(cors.Default()) // Allow all origins
-
-	// GET /cndy/stats[?from=XXX&to=XXX]
-	router.GET("/stats", func(c *gin.Context) {
-		from, to, err := filter.Parse(c)
-		if err != nil {
-			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
-			c.JSON(http.StatusBadRequest, gin.H{
-				"status":  "error",
-				"message": err.Error(),
-			})
-			return
-		}
-
-		currentCursor, err := cursor.GetLatest(db)
-		if err != nil {
-			log.Printf("[ERROR] Couldn't get latest cursor from database: %s", err)
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"asset_code":         cndy.AssetCode,
-			"effect_count":       effect.ItemCount(db, effect.Filter{From: from, To: to}),
-			"accounts_involved":  effect.AccountCount(db, effect.Filter{From: from, To: to}),
-			"amount_transferred": effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to}),
-			"trustlines_created": effect.TotalCount(db, effect.Filter{Type: "trustline_created", From: from, To: to}),
-			"amount_issued":      effect.TotalIssued(db, cndy.AssetIssuer, effect.Filter{From: from, To: to}),
-			"current_cursor":     currentCursor,
-		})
-		return
-	})
+	stats.Init(db, router)
 
 	// GET /effects[?from=XXX&to=XXX]
 	router.GET("/effects", func(c *gin.Context) {
