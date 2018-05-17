@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/utils/bigint"
+	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
 	"testing"
@@ -19,12 +20,12 @@ var datasets = []struct {
 }{
 	{"34028708058632193-0", "GDNH64DRUT4CY3UJLWQIB655PQ6OG34UGYB4NC5DC4TYWLNJIBCEYTTD", "", "trustline_created", time.Date(2018, time.March, 8, 0, 0, 0, 0, time.UTC)},
 	{"34028708058632193-1", "GDNH64DRUT4CY3UJLWQIB655PQ6OG34UGYB4NC5DC4TYWLNJIBCEYTTD", "1000.0000000", "account_credited", time.Date(2018, time.March, 10, 0, 0, 0, 0, time.UTC)},
-	{"34028708058632193-2", "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX", "1000.0000000", "account_debited", time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
+	{"34028708058632193-2", cndy.AssetIssuer, "1000.0000000", "account_debited", time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
 	{"34028708058632193-3", "GBEYRLI7OCZU7JVT33GBVVI5XWVCQNSUI3TXDE7Z5MWC6CLQMSTPDT6A", "", "trustline_created", time.Date(2018, time.March, 14, 0, 0, 0, 0, time.UTC)},
 	{"34028708058632193-4", "GBEYRLI7OCZU7JVT33GBVVI5XWVCQNSUI3TXDE7Z5MWC6CLQMSTPDT6A", "15.0000000", "account_credited", time.Date(2018, time.March, 16, 0, 0, 0, 0, time.UTC)},
 	{"34028708058632193-5", "GDNH64DRUT4CY3UJLWQIB655PQ6OG34UGYB4NC5DC4TYWLNJIBCEYTTD", "15.0000000", "account_debited", time.Date(2018, time.March, 18, 0, 0, 0, 0, time.UTC)},
 	{"34028708058632193-6", "GDNH64DRUT4CY3UJLWQIB655PQ6OG34UGYB4NC5DC4TYWLNJIBCEYTTD", "100.0000000", "account_credited", time.Date(2018, time.March, 20, 0, 0, 0, 0, time.UTC)},
-	{"34028708058632193-7", "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX", "100.0000000", "account_debited", time.Date(2018, time.March, 22, 0, 0, 0, 0, time.UTC)},
+	{"34028708058632193-7", cndy.AssetIssuer, "100.0000000", "account_debited", time.Date(2018, time.March, 22, 0, 0, 0, 0, time.UTC)},
 }
 
 func TestNew(t *testing.T) {
@@ -55,8 +56,8 @@ func TestNew(t *testing.T) {
 
 	asset := horizon.Asset{
 		Type:   "credit_alphanum4",
-		Code:   "CNDY",
-		Issuer: "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
+		Code:   cndy.AssetCode,
+		Issuer: cndy.AssetIssuer,
 	}
 
 	type links struct {
@@ -70,7 +71,7 @@ func TestNew(t *testing.T) {
 	effect := horizon.Effect{
 		ID:      "0033820436504518657-0000000001",
 		PT:      "33820436504518657-1",
-		Account: "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
+		Account: cndy.AssetIssuer,
 		Amount:  "5.0000000",
 		Type:    "account_debited",
 		TypeI:   2,
@@ -321,25 +322,25 @@ func TestTotalIssued(t *testing.T) {
 	}
 
 	// Filter{}
-	count := TotalIssued(tx, "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX", Filter{})
+	count := TotalIssued(tx, cndy.AssetIssuer, Filter{})
 	if count != 11000000000 {
 		t.Errorf("Expected 1100.0000000 got %d", count)
 	}
 
 	// Filter{From}
-	count = TotalIssued(tx, "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX", Filter{From: &datasets[4].CreatedAt})
+	count = TotalIssued(tx, cndy.AssetIssuer, Filter{From: &datasets[4].CreatedAt})
 	if count != 1000000000 {
 		t.Errorf("Expected 100.0000000 got %d", count)
 	}
 
 	// Filter{To}
-	count = TotalIssued(tx, "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX", Filter{To: &datasets[4].CreatedAt})
+	count = TotalIssued(tx, cndy.AssetIssuer, Filter{To: &datasets[4].CreatedAt})
 	if count != 10000000000 {
 		t.Errorf("Expected 1000.0000000 got %d", count)
 	}
 
 	// Filter{From, To}
-	count = TotalIssued(tx, "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX", Filter{From: &datasets[1].CreatedAt, To: &datasets[3].CreatedAt})
+	count = TotalIssued(tx, cndy.AssetIssuer, Filter{From: &datasets[1].CreatedAt, To: &datasets[3].CreatedAt})
 	if count != 10000000000 {
 		t.Errorf("Expected 1000.0000000 got %d", count)
 	}
@@ -481,8 +482,8 @@ func insertData(tx interface{}) (err error) {
 		}
 
 		_, err = sql.Exec(tx, `INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, asset_type, asset_issuer, asset_code, created_at)
-			                    VALUES($1, 'https://horizon-testnet.stellar.org/operations/34028708058632193', $2, $3, $4, $5, 'credit_alphanum4', 'GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX', 'CNDY', $6)`,
-			fmt.Sprintf("0034028708058632193-000000000%d", i), data.PagingToken, data.Account, amount, data.Type, data.CreatedAt)
+			                    VALUES($1, 'https://horizon-testnet.stellar.org/operations/34028708058632193', $2, $3, $4, $5, 'credit_alphanum4', $6, $7, $7)`,
+			fmt.Sprintf("0034028708058632193-000000000%d", i), data.PagingToken, data.Account, amount, data.Type, cndy.AssetIssuer, cndy.AssetCode, data.CreatedAt)
 		if err != nil {
 			return
 		}
