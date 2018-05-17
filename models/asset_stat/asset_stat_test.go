@@ -1,6 +1,7 @@
 package assetStat
 
 import (
+	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/sql"
 	"testing"
 	"time"
@@ -33,8 +34,8 @@ func TestGet(t *testing.T) {
 
 	for _, data := range datasets {
 		_, err = tx.Exec(`INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, total_amount, num_accounts, num_effects, created_at)
-			              VALUES($1, 'CNDY', 'GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX', 'credit_alphanum4', $2, $3, $4, $5)`,
-			data.PagingToken, data.TotalAmount, data.NumAccounts, data.NumEffects, data.CreatedAt)
+			              VALUES($1, $2, $3, 'credit_alphanum4', $4, $5, $6, $7)`,
+			data.PagingToken, cndy.AssetCode, cndy.AssetIssuer, data.TotalAmount, data.NumAccounts, data.NumEffects, data.CreatedAt)
 		if err != nil {
 			t.Error(err)
 		}
