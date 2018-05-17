@@ -1,0 +1,4 @@
+package cndy
+
+const AssetCode = "CNDY"
+const AssetIssuer = "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX"

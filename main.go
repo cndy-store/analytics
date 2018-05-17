@@ -5,6 +5,7 @@ import (
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/models/cursor"
 	"github.com/cndy-store/analytics/models/effect"
+	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -15,10 +16,6 @@ import (
 	"net/http"
 	"time"
 )
-
-// Our asset code to watch and the cursor to when the asset was first introduced
-const ASSET_CODE = "CNDY"
-const ASSET_ISSUER = "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX"
 
 func main() {
 	db, err := sql.OpenAndMigrate(".")
@@ -42,7 +39,7 @@ func main() {
 		}
 
 		client.StreamEffects(ctx, &currentCursor, func(e horizon.Effect) {
-			if e.Asset.Code == ASSET_CODE && e.Asset.Issuer == ASSET_ISSUER {
+			if e.Asset.Code == cndy.AssetCode && e.Asset.Issuer == cndy.AssetIssuer {
 				err = effect.New(db, e)
 				if err != nil {
 					log.Printf("[ERROR] Couldn't save effect to database: %s", err)
@@ -79,12 +76,12 @@ func api(db *sqlx.DB) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"asset_code":         ASSET_CODE,
+			"asset_code":         cndy.AssetCode,
 			"effect_count":       effect.ItemCount(db, effect.Filter{From: from, To: to}),
 			"accounts_involved":  effect.AccountCount(db, effect.Filter{From: from, To: to}),
 			"amount_transferred": effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to}),
 			"trustlines_created": effect.TotalCount(db, effect.Filter{Type: "trustline_created", From: from, To: to}),
-			"amount_issued":      effect.TotalIssued(db, ASSET_ISSUER, effect.Filter{From: from, To: to}),
+			"amount_issued":      effect.TotalIssued(db, cndy.AssetIssuer, effect.Filter{From: from, To: to}),
 			"current_cursor":     currentCursor,
 		})
 		return
