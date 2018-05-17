@@ -9,15 +9,15 @@ import (
 func TestGet(t *testing.T) {
 	var datasets = []struct {
 		PagingToken string
-		TotalAmount string
+		TotalAmount int64
 		NumAccounts int32
 		NumEffects  int32
 		CreatedAt   time.Time
 	}{
-		{"33819440072110101-0", "1000", 10, 50, time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
-		{"33819440072110101-1", "1000", 12, 60, time.Date(2018, time.March, 14, 0, 0, 0, 0, time.UTC)},
-		{"33819440072110101-2", "2000", 15, 70, time.Date(2018, time.March, 16, 0, 0, 0, 0, time.UTC)},
-		{"33819440072110101-3", "2000", 22, 80, time.Date(2018, time.March, 18, 0, 0, 0, 0, time.UTC)},
+		{"33819440072110101-0", 10000000000, 10, 50, time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
+		{"33819440072110101-1", 10000000000, 12, 60, time.Date(2018, time.March, 14, 0, 0, 0, 0, time.UTC)},
+		{"33819440072110101-2", 20000000000, 15, 70, time.Date(2018, time.March, 16, 0, 0, 0, 0, time.UTC)},
+		{"33819440072110101-3", 20000000000, 22, 80, time.Date(2018, time.March, 18, 0, 0, 0, 0, time.UTC)},
 	}
 
 	db, err := sql.OpenAndMigrate("../..")
