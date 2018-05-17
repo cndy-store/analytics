@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/cndy-store/analytics/controllers/effects"
 	"github.com/cndy-store/analytics/controllers/stats"
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/models/cursor"
@@ -59,31 +60,7 @@ func api(db *sqlx.DB) {
 	router := gin.Default()
 	router.Use(cors.Default()) // Allow all origins
 	stats.Init(db, router)
-
-	// GET /effects[?from=XXX&to=XXX]
-	router.GET("/effects", func(c *gin.Context) {
-		from, to, err := filter.Parse(c)
-		if err != nil {
-			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
-			c.JSON(http.StatusBadRequest, gin.H{
-				"status":  "error",
-				"message": err.Error(),
-			})
-			return
-		}
-
-		effects, err := effect.Get(db, effect.Filter{From: from, To: to})
-		if err != nil {
-			log.Printf("[ERROR] Couldn't get effect from database: %s", err)
-			c.String(http.StatusInternalServerError, "")
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"effects": effects,
-		})
-		return
-	})
+	effects.Init(db, router)
 
 	// GET /history[?from=XXX&to=XXX]
 	router.GET("/history", func(c *gin.Context) {
