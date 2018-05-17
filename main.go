@@ -2,12 +2,11 @@ package main
 
 import (
 	"github.com/cndy-store/analytics/controllers/effects"
+	"github.com/cndy-store/analytics/controllers/history"
 	"github.com/cndy-store/analytics/controllers/stats"
-	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/models/cursor"
 	"github.com/cndy-store/analytics/models/effect"
 	"github.com/cndy-store/analytics/utils/cndy"
-	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -15,7 +14,6 @@ import (
 	"github.com/stellar/go/clients/horizon"
 	"golang.org/x/net/context"
 	"log"
-	"net/http"
 	"time"
 )
 
@@ -59,33 +57,10 @@ func main() {
 func api(db *sqlx.DB) {
 	router := gin.Default()
 	router.Use(cors.Default()) // Allow all origins
+
 	stats.Init(db, router)
 	effects.Init(db, router)
-
-	// GET /history[?from=XXX&to=XXX]
-	router.GET("/history", func(c *gin.Context) {
-		from, to, err := filter.Parse(c)
-		if err != nil {
-			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
-			c.JSON(http.StatusBadRequest, gin.H{
-				"status":  "error",
-				"message": err.Error(),
-			})
-			return
-		}
-
-		assetStats, err := assetStat.Get(db, assetStat.Filter{From: from, To: to})
-		if err != nil {
-			log.Printf("[ERROR] Couldn't get asset stats from database: %s", err)
-			c.String(http.StatusInternalServerError, "")
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"history": assetStats,
-		})
-		return
-	})
+	history.Init(db, router)
 
 	router.Run(":3144")
 }
