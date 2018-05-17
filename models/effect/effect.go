@@ -3,11 +3,10 @@ package effect
 import (
 	"encoding/json"
 	"github.com/cndy-store/analytics/models/asset_stat"
+	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/sql"
-	"github.com/stellar/go/amount"
 	"github.com/stellar/go/clients/horizon"
 	"log"
-	"math/big"
 	"net/http"
 	"time"
 )
@@ -60,15 +59,15 @@ func New(db interface{}, effect horizon.Effect) (err error) {
 	}
 
 	// Parse strings into integers
-	parsedAmount, err := parseInt64(effect.Amount)
+	parsedAmount, err := bigint.Parse(effect.Amount)
 	if err != nil {
 		return
 	}
-	parsedBalance, err := parseInt64(effect.Balance.Balance)
+	parsedBalance, err := bigint.Parse(effect.Balance.Balance)
 	if err != nil {
 		return
 	}
-	parsedBalanceLimit, err := parseInt64(effect.Balance.Limit)
+	parsedBalanceLimit, err := bigint.Parse(effect.Balance.Limit)
 	if err != nil {
 		return
 	}
@@ -231,25 +230,4 @@ func getOperation(url string) (op Operation) {
 		return
 	}
 	return
-}
-
-func parseInt64(s string) (*int64, error) {
-	// Prase empty strings as nil
-	if s == "" {
-		zero := int64(0)
-		return &zero, nil
-	}
-
-	p, err := amount.ParseInt64(s)
-	return &p, err
-}
-
-// stringFromInt64 returns an "amount string" from the provided raw int64 value `v`.
-// Taken from: github.com/stellar/go/amount/main.go
-func stringFromInt64(v int64) string {
-	One := int64(10000000)
-	bigOne := big.NewRat(One, 1)
-	r := big.NewRat(v, 1)
-	r.Quo(r, bigOne)
-	return r.FloatString(7)
 }

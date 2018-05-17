@@ -3,6 +3,7 @@ package effect
 import (
 	"fmt"
 	"github.com/cndy-store/analytics/models/asset_stat"
+	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
 	"testing"
@@ -136,7 +137,7 @@ func TestNew(t *testing.T) {
 	}
 
 	// Check converted amount
-	parsedAmount, err := parseInt64(effect.Amount)
+	parsedAmount, err := bigint.Parse(effect.Amount)
 	if err != nil {
 		return
 	}
@@ -469,53 +470,11 @@ func TestItemCount(t *testing.T) {
 	}
 }
 
-func TestParseInt64(t *testing.T) {
-	var tests = []struct {
-		String string
-		Int    int64
-	}{
-		{"", 0},
-		{"5.0000000", 50000000},
-		{"5.0", 50000000},
-		{"5", 50000000},
-		{"50000000", 500000000000000},
-	}
-
-	for _, test := range tests {
-		res, err := parseInt64(test.String)
-		if err != nil {
-			t.Error(err)
-		}
-
-		if test.Int != *res {
-			t.Errorf("Expected %d got %d", test.Int, *res)
-		}
-	}
-}
-
-func TestStringFromInt64(t *testing.T) {
-	var tests = []struct {
-		Int    int64
-		String string
-	}{
-		{0, "0.0000000"},
-		{5, "0.0000005"},
-		{50000000, "5.0000000"},
-	}
-
-	for _, test := range tests {
-		res := stringFromInt64(test.Int)
-		if test.String != res {
-			t.Errorf("Expected %s got %s", test.String, res)
-		}
-	}
-}
-
 // Helper function to insert test data
 func insertData(tx interface{}) (err error) {
 	for i, data := range datasets {
 		var amount *int64
-		amount, err = parseInt64(data.Amount)
+		amount, err = bigint.Parse(data.Amount)
 		if err != nil {
 			return
 		}
