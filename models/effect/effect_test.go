@@ -1,32 +1,14 @@
 package effect
 
 import (
-	"fmt"
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/sql"
+	"github.com/cndy-store/analytics/utils/test"
 	"github.com/stellar/go/clients/horizon"
 	"testing"
-	"time"
 )
-
-var datasets = []struct {
-	PagingToken string
-	Account     string
-	Amount      string
-	Type        string
-	CreatedAt   time.Time
-}{
-	{"34028708058632193-0", "GDNH64DRUT4CY3UJLWQIB655PQ6OG34UGYB4NC5DC4TYWLNJIBCEYTTD", "", "trustline_created", time.Date(2018, time.March, 8, 0, 0, 0, 0, time.UTC)},
-	{"34028708058632193-1", "GDNH64DRUT4CY3UJLWQIB655PQ6OG34UGYB4NC5DC4TYWLNJIBCEYTTD", "1000.0000000", "account_credited", time.Date(2018, time.March, 10, 0, 0, 0, 0, time.UTC)},
-	{"34028708058632193-2", cndy.AssetIssuer, "1000.0000000", "account_debited", time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
-	{"34028708058632193-3", "GBEYRLI7OCZU7JVT33GBVVI5XWVCQNSUI3TXDE7Z5MWC6CLQMSTPDT6A", "", "trustline_created", time.Date(2018, time.March, 14, 0, 0, 0, 0, time.UTC)},
-	{"34028708058632193-4", "GBEYRLI7OCZU7JVT33GBVVI5XWVCQNSUI3TXDE7Z5MWC6CLQMSTPDT6A", "15.0000000", "account_credited", time.Date(2018, time.March, 16, 0, 0, 0, 0, time.UTC)},
-	{"34028708058632193-5", "GDNH64DRUT4CY3UJLWQIB655PQ6OG34UGYB4NC5DC4TYWLNJIBCEYTTD", "15.0000000", "account_debited", time.Date(2018, time.March, 18, 0, 0, 0, 0, time.UTC)},
-	{"34028708058632193-6", "GDNH64DRUT4CY3UJLWQIB655PQ6OG34UGYB4NC5DC4TYWLNJIBCEYTTD", "100.0000000", "account_credited", time.Date(2018, time.March, 20, 0, 0, 0, 0, time.UTC)},
-	{"34028708058632193-7", cndy.AssetIssuer, "100.0000000", "account_debited", time.Date(2018, time.March, 22, 0, 0, 0, 0, time.UTC)},
-}
 
 func TestNew(t *testing.T) {
 	db, err := sql.OpenAndMigrate("../..")
@@ -196,7 +178,7 @@ func TestGet(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = insertData(tx)
+	err = test.InsertEffects(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -206,59 +188,59 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
-	if len(datasets) != len(effects) {
-		t.Errorf("Expected %d effects got %d", len(datasets), len(effects))
+	if len(test.Effects) != len(effects) {
+		t.Errorf("Expected %d effects got %d", len(test.Effects), len(effects))
 	}
 
 	// Filter{From}
-	effects, err = Get(tx, Filter{From: &datasets[5].CreatedAt})
+	effects, err = Get(tx, Filter{From: &test.Effects[5].CreatedAt})
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
 	if len(effects) != 3 {
 		t.Errorf("Expected 3 effects got %d", len(effects))
 	}
-	if datasets[5].PagingToken != *effects[0].PagingToken {
-		t.Errorf("Expected paging_token to be %s got: %s", datasets[3].PagingToken, *effects[0].PagingToken)
+	if test.Effects[5].PagingToken != *effects[0].PagingToken {
+		t.Errorf("Expected paging_token to be %s got: %s", test.Effects[3].PagingToken, *effects[0].PagingToken)
 	}
-	if datasets[6].PagingToken != *effects[1].PagingToken {
-		t.Errorf("Expected paging_token to be %s got: %s", datasets[4].PagingToken, *effects[1].PagingToken)
+	if test.Effects[6].PagingToken != *effects[1].PagingToken {
+		t.Errorf("Expected paging_token to be %s got: %s", test.Effects[4].PagingToken, *effects[1].PagingToken)
 	}
-	if datasets[7].PagingToken != *effects[2].PagingToken {
-		t.Errorf("Expected paging_token to be %s got: %s", datasets[5].PagingToken, *effects[2].PagingToken)
+	if test.Effects[7].PagingToken != *effects[2].PagingToken {
+		t.Errorf("Expected paging_token to be %s got: %s", test.Effects[5].PagingToken, *effects[2].PagingToken)
 	}
 
 	// Filter{To}
-	effects, err = Get(tx, Filter{To: &datasets[2].CreatedAt})
+	effects, err = Get(tx, Filter{To: &test.Effects[2].CreatedAt})
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
 	if len(effects) != 3 {
 		t.Errorf("Expected 3 effects got %d", len(effects))
 	}
-	if datasets[0].PagingToken != *effects[0].PagingToken {
-		t.Errorf("Expected paging_token to be %s got: %s", datasets[0].PagingToken, *effects[0].PagingToken)
+	if test.Effects[0].PagingToken != *effects[0].PagingToken {
+		t.Errorf("Expected paging_token to be %s got: %s", test.Effects[0].PagingToken, *effects[0].PagingToken)
 	}
-	if datasets[1].PagingToken != *effects[1].PagingToken {
-		t.Errorf("Expected paging_token to be %s got: %s", datasets[1].PagingToken, *effects[1].PagingToken)
+	if test.Effects[1].PagingToken != *effects[1].PagingToken {
+		t.Errorf("Expected paging_token to be %s got: %s", test.Effects[1].PagingToken, *effects[1].PagingToken)
 	}
-	if datasets[2].PagingToken != *effects[2].PagingToken {
-		t.Errorf("Expected paging_token to be %s got: %s", datasets[2].PagingToken, *effects[2].PagingToken)
+	if test.Effects[2].PagingToken != *effects[2].PagingToken {
+		t.Errorf("Expected paging_token to be %s got: %s", test.Effects[2].PagingToken, *effects[2].PagingToken)
 	}
 
 	// Filter{From, To}
-	effects, err = Get(tx, Filter{From: &datasets[3].CreatedAt, To: &datasets[4].CreatedAt})
+	effects, err = Get(tx, Filter{From: &test.Effects[3].CreatedAt, To: &test.Effects[4].CreatedAt})
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
 	if len(effects) != 2 {
 		t.Errorf("Expected 2 effects got %d", len(effects))
 	}
-	if datasets[3].PagingToken != *effects[0].PagingToken {
-		t.Errorf("Expected paging_token to be %s got: %s", datasets[3].PagingToken, *effects[0].PagingToken)
+	if test.Effects[3].PagingToken != *effects[0].PagingToken {
+		t.Errorf("Expected paging_token to be %s got: %s", test.Effects[3].PagingToken, *effects[0].PagingToken)
 	}
-	if datasets[4].PagingToken != *effects[1].PagingToken {
-		t.Errorf("Expected paging_token to be %s got: %s", datasets[4].PagingToken, *effects[1].PagingToken)
+	if test.Effects[4].PagingToken != *effects[1].PagingToken {
+		t.Errorf("Expected paging_token to be %s got: %s", test.Effects[4].PagingToken, *effects[1].PagingToken)
 	}
 }
 
@@ -274,7 +256,7 @@ func TestAccountCount(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = insertData(tx)
+	err = test.InsertEffects(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -286,19 +268,19 @@ func TestAccountCount(t *testing.T) {
 	}
 
 	// Filter{From}
-	count = AccountCount(tx, Filter{From: &datasets[4].CreatedAt})
+	count = AccountCount(tx, Filter{From: &test.Effects[4].CreatedAt})
 	if count != 3 {
 		t.Errorf("Expected 3 got %d", count)
 	}
 
 	// Filter{To}
-	count = AccountCount(tx, Filter{To: &datasets[4].CreatedAt})
+	count = AccountCount(tx, Filter{To: &test.Effects[4].CreatedAt})
 	if count != 3 {
 		t.Errorf("Expected 3 got %d", count)
 	}
 
 	// Filter{From, To}
-	count = AccountCount(tx, Filter{From: &datasets[4].CreatedAt, To: &datasets[5].CreatedAt})
+	count = AccountCount(tx, Filter{From: &test.Effects[4].CreatedAt, To: &test.Effects[5].CreatedAt})
 	if count != 2 {
 		t.Errorf("Expected 2 got %d", count)
 	}
@@ -316,7 +298,7 @@ func TestTotalIssued(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = insertData(tx)
+	err = test.InsertEffects(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -328,19 +310,19 @@ func TestTotalIssued(t *testing.T) {
 	}
 
 	// Filter{From}
-	count = TotalIssued(tx, cndy.AssetIssuer, Filter{From: &datasets[4].CreatedAt})
+	count = TotalIssued(tx, cndy.AssetIssuer, Filter{From: &test.Effects[4].CreatedAt})
 	if count != 1000000000 {
 		t.Errorf("Expected 100.0000000 got %d", count)
 	}
 
 	// Filter{To}
-	count = TotalIssued(tx, cndy.AssetIssuer, Filter{To: &datasets[4].CreatedAt})
+	count = TotalIssued(tx, cndy.AssetIssuer, Filter{To: &test.Effects[4].CreatedAt})
 	if count != 10000000000 {
 		t.Errorf("Expected 1000.0000000 got %d", count)
 	}
 
 	// Filter{From, To}
-	count = TotalIssued(tx, cndy.AssetIssuer, Filter{From: &datasets[1].CreatedAt, To: &datasets[3].CreatedAt})
+	count = TotalIssued(tx, cndy.AssetIssuer, Filter{From: &test.Effects[1].CreatedAt, To: &test.Effects[3].CreatedAt})
 	if count != 10000000000 {
 		t.Errorf("Expected 1000.0000000 got %d", count)
 	}
@@ -358,7 +340,7 @@ func TestTotalAmount(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = insertData(tx)
+	err = test.InsertEffects(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -370,19 +352,19 @@ func TestTotalAmount(t *testing.T) {
 	}
 
 	// Filter{From}
-	count = TotalAmount(tx, Filter{Type: "account_credited", From: &datasets[4].CreatedAt})
+	count = TotalAmount(tx, Filter{Type: "account_credited", From: &test.Effects[4].CreatedAt})
 	if count != 1150000000 {
 		t.Errorf("Expected 115.0000000 got %d", count)
 	}
 
 	// Filter{To}
-	count = TotalAmount(tx, Filter{Type: "account_credited", To: &datasets[4].CreatedAt})
+	count = TotalAmount(tx, Filter{Type: "account_credited", To: &test.Effects[4].CreatedAt})
 	if count != 10150000000 {
 		t.Errorf("Expected 1015.0000000 got %d", count)
 	}
 
 	// Filter{From, To}
-	count = TotalAmount(tx, Filter{Type: "account_credited", From: &datasets[1].CreatedAt, To: &datasets[3].CreatedAt})
+	count = TotalAmount(tx, Filter{Type: "account_credited", From: &test.Effects[1].CreatedAt, To: &test.Effects[3].CreatedAt})
 	if count != 10000000000 {
 		t.Errorf("Expected 1000.0000000 got %d", count)
 	}
@@ -400,7 +382,7 @@ func TestTotalCount(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = insertData(tx)
+	err = test.InsertEffects(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -412,19 +394,19 @@ func TestTotalCount(t *testing.T) {
 	}
 
 	// Filter{From}
-	count = TotalCount(tx, Filter{Type: "trustline_created", From: &datasets[3].CreatedAt})
+	count = TotalCount(tx, Filter{Type: "trustline_created", From: &test.Effects[3].CreatedAt})
 	if count != 1 {
 		t.Errorf("Expected 1 got %d", count)
 	}
 
 	// Filter{To}
-	count = TotalCount(tx, Filter{Type: "trustline_created", To: &datasets[2].CreatedAt})
+	count = TotalCount(tx, Filter{Type: "trustline_created", To: &test.Effects[2].CreatedAt})
 	if count != 1 {
 		t.Errorf("Expected 1 got %d", count)
 	}
 
 	// Filter{From, To}
-	count = TotalCount(tx, Filter{Type: "trustline_created", From: &datasets[1].CreatedAt, To: &datasets[2].CreatedAt})
+	count = TotalCount(tx, Filter{Type: "trustline_created", From: &test.Effects[1].CreatedAt, To: &test.Effects[2].CreatedAt})
 	if count != 0 {
 		t.Errorf("Expected 0 got %d", count)
 	}
@@ -442,54 +424,34 @@ func TestItemCount(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = insertData(tx)
+	err = test.InsertEffects(tx)
 	if err != nil {
 		t.Error(err)
 	}
 
 	// Filter{}
 	count := ItemCount(tx, Filter{})
-	if count != len(datasets) {
-		t.Errorf("Expected %d got %d", len(datasets), count)
+	if count != len(test.Effects) {
+		t.Errorf("Expected %d got %d", len(test.Effects), count)
 	}
 
 	// Filter{From}
-	count = ItemCount(tx, Filter{From: &datasets[3].CreatedAt})
+	count = ItemCount(tx, Filter{From: &test.Effects[3].CreatedAt})
 	if count != 5 {
 		t.Errorf("Expected 5 got %d", count)
 	}
 
 	// Filter{To}
-	count = ItemCount(tx, Filter{To: &datasets[2].CreatedAt})
+	count = ItemCount(tx, Filter{To: &test.Effects[2].CreatedAt})
 	if count != 3 {
 		t.Errorf("Expected 3 got %d", count)
 	}
 
 	// Filter{From, To}
-	count = ItemCount(tx, Filter{From: &datasets[1].CreatedAt, To: &datasets[4].CreatedAt})
+	count = ItemCount(tx, Filter{From: &test.Effects[1].CreatedAt, To: &test.Effects[4].CreatedAt})
 	if count != 4 {
 		t.Errorf("Expected 4 got %d", count)
 	}
-}
-
-// Helper function to insert test data
-func insertData(tx interface{}) (err error) {
-	for i, data := range datasets {
-		var amount *int64
-		amount, err = bigint.Parse(data.Amount)
-		if err != nil {
-			return
-		}
-
-		_, err = sql.Exec(tx, `INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, asset_type, asset_issuer, asset_code, created_at)
-			                    VALUES($1, 'https://horizon-testnet.stellar.org/operations/34028708058632193', $2, $3, $4, $5, 'credit_alphanum4', $6, $7, $7)`,
-			fmt.Sprintf("0034028708058632193-000000000%d", i), data.PagingToken, data.Account, amount, data.Type, cndy.AssetIssuer, cndy.AssetCode, data.CreatedAt)
-		if err != nil {
-			return
-		}
-	}
-
-	return
 }
 
 func TestConvert(t *testing.T) {
