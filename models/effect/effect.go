@@ -150,7 +150,7 @@ func TotalAmount(db interface{}, filter Filter) string {
 		return ""
 	}
 
-	return stringFromInt64(a)
+	return bigint.ToString(a)
 }
 
 // Total assets issued
@@ -165,7 +165,7 @@ func TotalIssued(db interface{}, issuer string, filter Filter) string {
 		return ""
 	}
 
-	return stringFromInt64(a)
+	return bigint.ToString(a)
 }
 
 func TotalCount(db interface{}, filter Filter) (count int) {
