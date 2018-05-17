@@ -1,6 +1,7 @@
 package cursor
 
 import (
+	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
 	"testing"
@@ -18,7 +19,7 @@ func TestGenesisCursor(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	genesisCursor := horizon.Cursor("33819440072110101-2") // See db/migrations/0001_initial.up.sql
+	genesisCursor := horizon.Cursor(cndy.GenesisCursor)
 
 	currentCursor, err := GetLatest(tx)
 	if err != nil {
