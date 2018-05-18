@@ -1,5 +1,5 @@
 /main
 /analytics
+/cndy-linux-amd64
 /vendor
-.env
 .envrc

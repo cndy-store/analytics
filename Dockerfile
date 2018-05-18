@@ -18,4 +18,5 @@ RUN glide install
 ADD . /go/src/github.com/cndy-store/analytics
 RUN go build
 
-CMD ["sh", "-c", "./wait-for-it.sh ${PGHOST}:5432 -- ./analytics"]
+ENTRYPOINT ["./wait-for-it.sh", "${PGHOST}:5432", "--"]
+CMD ["./analytics"]
