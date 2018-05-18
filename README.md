@@ -1,50 +1,77 @@
-# Build
+# Native
 
-Dependency management is done via [Glide](https://glide.sh).
+## Dependencies: PostgreSQL
 
-Build natively:
+Install PostgreSQL and point the following environment variables to the database:
+
+```bash
+export PGHOST=127.0.0.1
+export PGUSER=cndy
+export PGDATABASE=cndy
+export PGSSLMODE=disable
+```
+
+Build the API natively (Dependency management is done via [Glide](https://glide.sh)):
+
+## Build
 
 ```bash
 glide install
 go build
 ```
 
-Cross compile for Linux with [Docker](https://docker.com/):
+## Run tests
+
+```bash
+go test ./...
+```
+
+# Docker
+
+## Run API inside Docker
+
+Spawn PostgreSQL instance and CNDY analytics API via [Docker](https://docker.com/):
 
 ```bash
 docker-compose up
 ```
 
-Run tests
+## Run tests inside Docker
 
 ```bash
-docker-compose run cndy-analytics /bin/bash -c 'go test ./...'
+docker-compose run -e DATABASE=cndy_test api go test ./...
+```
+
+## Copy cross compiled binary for Linux from Docker container to host
+
+```bash
+docker run -v $PWD:/host --entrypoint cp cndy-store/analytics analytics /host/cndy-linux-amd64
 ```
 
 
-# API
+# API endpoints and examples
 
 ## Stats
 
-GET http://api.cndy.store:3144/stats[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
+GET https://api.cndy.store/stats[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
 
 If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
 ```json
 {
-  "accounts_involved": 3,
-  "amount_issued": 1108,
-  "amount_transferred": 2119,
+  "accounts_involved": 10,
+  "amount_issued": "4000.0000000",
+  "amount_transferred": "6410.0000000",
   "asset_code": "CNDY",
-  "current_cursor": "33592975036518402-2",
-  "trustlines_created": 1,
-  "effect_count": 25
+  "current_cursor": "35496616211263489-2",
+  "effect_count": 59,
+  "trustlines_created": 9
 }
 ```
 
 ## Effects
 
-GET http://api.cndy.store:3144/effects[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
+GET https://api.cndy.store/effects[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
 
 If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
@@ -52,34 +79,48 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 {
   "effects": [
     {
-      "id": "0033170775456358401-0000000001",
-      "operation": "https://horizon-testnet.stellar.org/operations/33170775456358401",
-      "paging_token": "33170775456358401-1",
-      "account": "GDQLK4Y26S5H6X3WAAMKFIT2575N54B667TCJA3KTS5XBYL5KUJWMFRM",
-      "amount": "12.0000000",
-      "type": "account_credited",
+      "id": "0034641642841444353-0000000002",
+      "operation": "https://horizon-testnet.stellar.org/operations/34641642841444353",
+      "succeeds": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=34641642841444353-2",
+      "precedes": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=34641642841444353-2",
+      "paging_token": "34641642841444353-2",
+      "account": "GBET4AVL4BYLFJTFKX2UYE3Y3EHNZXOBMBO5FP7O5FFTHSEAPZ5VEHHD",
+      "type": "account_debited",
+      "type_i": 3,
       "starting_balance": "",
-      "balance": "",
-      "balance_limit": "",
       "asset_type": "credit_alphanum4",
       "asset_code": "CNDY",
-      "asset_issuer": "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU",
-      "created_at": "2018-03-03T23:05:43Z"
+      "asset_issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
+      "signer_public_key": "",
+      "signer_weight": 0,
+      "signer_key": "",
+      "signer_type": "",
+      "created_at": "2018-03-23T18:54:05Z",
+      "amount": "10.0000000",
+      "balance": "0.0000000",
+      "balance_limit": "0.0000000"
     },
     {
-      "id": "0033170775456358401-0000000002",
-      "operation": "https://horizon-testnet.stellar.org/operations/33170775456358401",
-      "paging_token": "33170775456358401-2",
-      "account": "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU",
-      "amount": "12.0000000",
+      "id": "0034683389923561473-0000000002",
+      "operation": "https://horizon-testnet.stellar.org/operations/34683389923561473",
+      "succeeds": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=34683389923561473-2",
+      "precedes": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=34683389923561473-2",
+      "paging_token": "34683389923561473-2",
+      "account": "GBET4AVL4BYLFJTFKX2UYE3Y3EHNZXOBMBO5FP7O5FFTHSEAPZ5VEHHD",
       "type": "account_debited",
+      "type_i": 3,
       "starting_balance": "",
-      "balance": "",
-      "balance_limit": "",
       "asset_type": "credit_alphanum4",
       "asset_code": "CNDY",
-      "asset_issuer": "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU",
-      "created_at": "2018-03-03T23:05:43Z"
+      "asset_issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
+      "signer_public_key": "",
+      "signer_weight": 0,
+      "signer_key": "",
+      "signer_type": "",
+      "created_at": "2018-03-24T08:24:06Z",
+      "amount": "10.0000000",
+      "balance": "0.0000000",
+      "balance_limit": "0.0000000"
     }
   ]
 }
@@ -87,7 +128,7 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
 ## Asset stats
 
-GET http://api.cndy.store:3144/history[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
+GET https://api.cndy.store/history[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
 
 If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
@@ -95,21 +136,24 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 {
   "history": [
     {
+      "paging_token": "34683389923561473-1",
       "asset_type": "credit_alphanum4",
-      "asset_code": "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU",
-      "asset_issuer": "CNDY",
-      "num_accounts": 1,
-      "num_effects": 1,
-      "created_at": "2018-03-03T23:05:43Z"
+      "asset_code": "CNDY",
+      "asset_issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
+      "num_accounts": 10,
+      "num_effects": 58,
+      "created_at": "2018-03-24T08:24:06Z",
+      "total_amount": "4000.0000000"
     },
     {
+      "paging_token": "34683389923561473-2",
       "asset_type": "credit_alphanum4",
-      "asset_code": "GD7YB3R3TKUU3OHTE3DO5BIVBLQVFKYRHPW5Y6NHVSQVNNEOQ5I2RKLU",
-      "asset_issuer": "CNDY",
-      "total_amount": "12.0",
-      "num_accounts": 2,
-      "num_effects": 2,
-      "created_at": "2018-03-03T23:05:43Z"
+      "asset_code": "CNDY",
+      "asset_issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
+      "num_accounts": 10,
+      "num_effects": 59,
+      "created_at": "2018-03-24T08:24:06Z",
+      "total_amount": "4000.0000000"
     }
   ]
 }
