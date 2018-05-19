@@ -4,12 +4,11 @@ import (
 	"github.com/cndy-store/analytics/models/effect"
 	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	"log"
 	"net/http"
 )
 
-func Init(db *sqlx.DB, router *gin.Engine) {
+func Init(db interface{}, router *gin.Engine) {
 	// GET /effects[?from=XXX&to=XXX]
 	router.GET("/effects", func(c *gin.Context) {
 		from, to, err := filter.Parse(c)

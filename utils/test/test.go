@@ -9,13 +9,15 @@ import (
 	"time"
 )
 
-var Effects = []struct {
+type Effect struct {
 	PagingToken string
 	Account     string
 	Amount      string
 	Type        string
 	CreatedAt   time.Time
-}{
+}
+
+var Effects = []Effect{
 	{"34028708058632193-0", "GDNH64DRUT4CY3UJLWQIB655PQ6OG34UGYB4NC5DC4TYWLNJIBCEYTTD", "", "trustline_created", time.Date(2018, time.March, 8, 0, 0, 0, 0, time.UTC)},
 	{"34028708058632193-1", "GDNH64DRUT4CY3UJLWQIB655PQ6OG34UGYB4NC5DC4TYWLNJIBCEYTTD", "1000.0000000", "account_credited", time.Date(2018, time.March, 10, 0, 0, 0, 0, time.UTC)},
 	{"34028708058632193-2", cndy.AssetIssuer, "1000.0000000", "account_debited", time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
@@ -26,13 +28,15 @@ var Effects = []struct {
 	{"34028708058632193-7", cndy.AssetIssuer, "100.0000000", "account_debited", time.Date(2018, time.March, 22, 0, 0, 0, 0, time.UTC)},
 }
 
-var AssetStats = []struct {
+type AssetStat struct {
 	PagingToken string
 	TotalAmount int64
 	NumAccounts int32
 	NumEffects  int32
 	CreatedAt   time.Time
-}{
+}
+
+var AssetStats = []AssetStat{
 	{"39819440072110101-0", 10000000000, 10, 50, time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
 	{"39819440072110101-1", 10000000000, 12, 60, time.Date(2018, time.March, 14, 0, 0, 0, 0, time.UTC)},
 	{"39819440072110101-2", 20000000000, 15, 70, time.Date(2018, time.March, 16, 0, 0, 0, 0, time.UTC)},
