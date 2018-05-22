@@ -3,6 +3,7 @@ package stats
 import (
 	"bytes"
 	"fmt"
+	"github.com/cndy-store/analytics/models/cursor"
 	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/cndy-store/analytics/utils/test"
@@ -107,6 +108,10 @@ func TestStats(t *testing.T) {
 	}
 
 	router := gin.Default()
+	err = cursor.LoadLatest(db)
+	if err != nil {
+		t.Errorf("Couldn't get latest cursor from database: %s", err)
+	}
 	Init(tx, router)
 
 	for _, test := range tests {
@@ -123,7 +128,7 @@ func TestStats(t *testing.T) {
 		if len(test.bodyContains) > 0 {
 			for _, s := range test.bodyContains {
 				if !strings.Contains(resp.Body.String(), s) {
-					t.Errorf("body did not contain '%s' in '%s'", s, resp.Body.String())
+					t.Errorf("Body did not contain '%s' in '%s'", s, resp.Body.String())
 				}
 			}
 		}

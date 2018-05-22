@@ -21,17 +21,17 @@ func TestGenesisCursor(t *testing.T) {
 
 	genesisCursor := horizon.Cursor(cndy.GenesisCursor)
 
-	currentCursor, err := GetLatest(tx)
+	err = LoadLatest(tx)
 	if err != nil {
-		t.Errorf("cursor.GetLatest(): %s", err)
+		t.Errorf("cursor.LoadLatest(): %s", err)
 	}
 
-	if currentCursor != genesisCursor {
-		t.Errorf("Latest cursor is %s, expected %s", currentCursor, genesisCursor)
+	if Current != genesisCursor {
+		t.Errorf("Latest cursor is %s, expected %s", Current, genesisCursor)
 	}
 }
 
-func TestNew(t *testing.T) {
+func TestSave(t *testing.T) {
 	db, err := sql.OpenAndMigrate("../..")
 	if err != nil {
 		t.Error(err)
@@ -43,19 +43,20 @@ func TestNew(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	newCursor := "33819440072111111-1"
+	newCursor := horizon.Cursor("33819440072111111-1")
+	Update(newCursor)
 
-	err = New(tx, newCursor)
+	err = Save(tx)
 	if err != nil {
-		t.Errorf("cursor.New(): %s", err)
+		t.Errorf("cursor.Save(): %s", err)
 	}
 
-	currentCursor, err := GetLatest(tx)
+	err = LoadLatest(tx)
 	if err != nil {
 		t.Errorf("cursor.GetLastest(): %s", err)
 	}
 
-	if currentCursor != horizon.Cursor(newCursor) {
-		t.Errorf("Latest cursor is %s, expected %s", currentCursor, newCursor)
+	if Current != horizon.Cursor(newCursor) {
+		t.Errorf("Latest cursor is %s, expected %s", Current, newCursor)
 	}
 }
