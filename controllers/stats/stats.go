@@ -24,11 +24,6 @@ func Init(db interface{}, router *gin.Engine) {
 			return
 		}
 
-		currentCursor, err := cursor.GetLatest(db)
-		if err != nil {
-			log.Printf("[ERROR] Couldn't get latest cursor from database: %s", err)
-		}
-
 		c.JSON(http.StatusOK, gin.H{
 			"asset_code":         cndy.AssetCode,
 			"effect_count":       effect.ItemCount(db, effect.Filter{From: from, To: to}),
@@ -36,7 +31,7 @@ func Init(db interface{}, router *gin.Engine) {
 			"amount_transferred": bigint.ToString(effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to})),
 			"trustlines_created": effect.TotalCount(db, effect.Filter{Type: "trustline_created", From: from, To: to}),
 			"amount_issued":      bigint.ToString(effect.TotalIssued(db, cndy.AssetIssuer, effect.Filter{From: from, To: to})),
-			"current_cursor":     currentCursor,
+			"current_cursor":     cursor.Current,
 		})
 		return
 	})

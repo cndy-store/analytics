@@ -14,7 +14,9 @@ import (
 	"github.com/stellar/go/clients/horizon"
 	"golang.org/x/net/context"
 	"log"
-	"time"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -26,30 +28,53 @@ func main() {
 	// Start API in go subroutine
 	go api(db)
 
+	// Intercept signals
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
+	// Save cursor on exit
+	go func() {
+		signal := <-signalChannel
+		log.Printf("Received signal: %v\n", signal)
+		log.Printf("Saving cursor to database: %s\n", cursor.Current)
+
+		err = cursor.Save(db)
+		if err != nil {
+			log.Printf("[ERROR] Couldn't save cursor to database: %s", err)
+		}
+		os.Exit(0)
+	}()
+
 	client := horizon.DefaultTestNetClient
 	ctx := context.Background() // Stream indefinitly
 
-	for {
-		currentCursor, err := cursor.GetLatest(db)
-		if err != nil {
-			log.Printf("[ERROR] Couldn't get latest cursor from database: %s", err)
-			log.Printf("        Re-trying in 5 seconds...")
-			time.Sleep(5 * time.Second)
-			continue
-		}
+	// Load latest cursor from database
+	err = cursor.LoadLatest(db)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't get latest cursor from database: %s", err)
+		os.Exit(1)
+	}
 
-		client.StreamEffects(ctx, &currentCursor, func(e horizon.Effect) {
+	for {
+		client.StreamEffects(ctx, &cursor.Current, func(e horizon.Effect) {
 			if e.Asset.Code == cndy.AssetCode && e.Asset.Issuer == cndy.AssetIssuer {
 				err = effect.New(db, e)
 				if err != nil {
 					log.Printf("[ERROR] Couldn't save effect to database: %s", err)
 				}
+
+				// Make sure to also safe the current cursor, so database is consistent
+				err = cursor.Save(db)
+				if err != nil {
+					log.Printf("[ERROR] Couldn't save cursor to database: %s", err)
+				}
 			}
 
-			err = cursor.New(db, e.PT)
-			if err != nil {
-				log.Printf("[ERROR] Couldn't save cursor to database: %s", err)
-			}
+			cursor.Update(horizon.Cursor(e.PT))
 		})
 	}
 }
