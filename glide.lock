@@ -1,5 +1,5 @@
 hash: 7dc1526bc69405c0f56f59d7be92a398a6ffb50eab39320072dad78909e82fb6
-updated: 2018-05-16T09:34:58.466804+02:00
+updated: 2018-05-24T11:33:56.759094+02:00
 imports:
 - name: github.com/agl/ed25519
   version: 278e1ec8e8a6e017cd07577924d6766039146ced
@@ -31,7 +31,7 @@ imports:
   - source
   - source/file
 - name: github.com/golang/protobuf
-  version: b4deda0973fb4c70b50d226b1af49f3da59f5265
+  version: 3a3da3a4e26776cc22a79ef46d5d58477532dede
   subpackages:
   - proto
 - name: github.com/jmoiron/sqlx
@@ -69,7 +69,7 @@ imports:
   subpackages:
   - hooks/test
 - name: github.com/stellar/go
-  version: 199cece79aa7a98850765d9783da7a31fc010e4a
+  version: 011f109ca8a98d59fc55fa51107623c65db3d3db
   repo: https://github.com/chr4/go-stellar-sdk
   subpackages:
   - amount
@@ -101,11 +101,11 @@ imports:
   subpackages:
   - codec
 - name: golang.org/x/net
-  version: 640f4622ab692b87c2f3a94265e6f579fe38263d
+  version: 9ef9f5bb98a1fdc41f8cf6c250a4404b4085e389
   subpackages:
   - context
 - name: golang.org/x/sys
-  version: 6f686a352de66814cdd080d970febae7767857a3
+  version: 77b0e4315053a57ed2962443614bdb28db152054
   subpackages:
   - unix
 - name: gopkg.in/go-playground/validator.v8
