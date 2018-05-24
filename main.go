@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -47,6 +48,19 @@ func main() {
 			log.Printf("[ERROR] Couldn't save cursor to database: %s", err)
 		}
 		os.Exit(0)
+	}()
+
+	// Also, save cursor every 5 minutes
+	go func() {
+		ticker := time.NewTicker(time.Minute * 5)
+		for _ = range ticker.C {
+			log.Printf("Saving cursor to database: %s\n", cursor.Current)
+
+			err = cursor.Save(db)
+			if err != nil {
+				log.Printf("[ERROR] Couldn't save cursor to database: %s", err)
+			}
+		}
 	}()
 
 	client := horizon.DefaultTestNetClient
