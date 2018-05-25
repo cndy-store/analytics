@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/cndy-store/analytics/controllers/docs"
 	"github.com/cndy-store/analytics/controllers/effects"
 	"github.com/cndy-store/analytics/controllers/history"
 	"github.com/cndy-store/analytics/controllers/stats"
@@ -100,6 +101,7 @@ func api(db *sqlx.DB) {
 	stats.Init(db, router)
 	effects.Init(db, router)
 	history.Init(db, router)
+	docs.Init(router)
 
 	router.Run(":3144")
 }
