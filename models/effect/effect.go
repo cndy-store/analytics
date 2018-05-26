@@ -57,9 +57,11 @@ func New(db interface{}, effect horizon.Effect) (err error) {
 	// operations. If so, ignore this effect.
 	// This prevents issues from unchecked transaction to oneself, see:
 	// https://stellar.stackexchange.com/questions/1036/why-are-overspending-transactions-added-to-the-ledger
-	if operation.To == operation.From && (effect.Asset.Type == "account_credited" || effect.Asset.Type == "account_debited") {
-		log.Printf("[WARN] Found effect where sender and receiver are the same account, ignoring.")
-		log.Printf("[DEBUG] %+v", effect)
+	//
+	// This happens right after cursor 38433759661400070-2
+	if operation.To == operation.From && (effect.Type == "account_credited" || effect.Type == "account_debited") {
+		log.Printf("[WARN] Found transaction of %s %s where sender and receiver are the same account, ignoring.",
+			effect.Amount, effect.Asset.Code)
 		return
 	}
 
