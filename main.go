@@ -27,9 +27,6 @@ func main() {
 		log.Fatal("[ERROR] Couldn't open database: ", err)
 	}
 
-	// Start API in go subroutine
-	go api(db)
-
 	// Intercept signals
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,
@@ -51,18 +48,11 @@ func main() {
 		os.Exit(0)
 	}()
 
-	// Also, save cursor every 5 minutes
-	go func() {
-		ticker := time.NewTicker(time.Minute * 5)
-		for _ = range ticker.C {
-			log.Printf("Saving cursor to database: %s\n", cursor.Current)
+	// Start API in go subroutine
+	go api(db)
 
-			err = cursor.Save(db)
-			if err != nil {
-				log.Printf("[ERROR] Couldn't save cursor to database: %s", err)
-			}
-		}
-	}()
+	// Also, save cursor every 5 minutes
+	go saveCursorTicker(db)
 
 	client := horizon.DefaultTestNetClient
 	ctx := context.Background() // Stream indefinitly
@@ -104,4 +94,17 @@ func api(db *sqlx.DB) {
 	docs.Init(router)
 
 	router.Run(":3144")
+}
+
+// saveCursorTicker persists the cursor to the database every 5 minutes
+func saveCursorTicker(db *sqlx.DB) {
+	ticker := time.NewTicker(time.Minute * 5)
+	for _ = range ticker.C {
+		log.Printf("Saving cursor to database: %s\n", cursor.Current)
+
+		err := cursor.Save(db)
+		if err != nil {
+			log.Printf("[ERROR] Couldn't save cursor to database: %s", err)
+		}
+	}
 }
