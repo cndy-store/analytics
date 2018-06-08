@@ -28,11 +28,6 @@ func Init(db interface{}, router *gin.Engine) {
 			return
 		}
 
-		// Convert int64 fields to strings
-		for i, _ := range assetStats {
-			assetStats[i].Convert()
-		}
-
 		c.JSON(http.StatusOK, gin.H{
 			"history": assetStats,
 		})

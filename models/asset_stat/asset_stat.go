@@ -60,6 +60,12 @@ func Get(db interface{}, filter Filter) (stats []AssetStat, err error) {
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] asset_stat.Get(): %s", err)
 	}
+
+	// Convert int64 fields to strings
+	for i, _ := range stats {
+		stats[i].Convert()
+	}
+
 	return
 }
 

@@ -185,6 +185,7 @@ func TotalCount(db interface{}, filter Filter) (count int) {
 	if err != nil {
 		log.Printf("[ERROR] effect.TotalCount(): %s", err)
 	}
+
 	return
 }
 
@@ -195,6 +196,7 @@ func AccountCount(db interface{}, filter Filter) (count int) {
 	if err != nil {
 		log.Printf("[ERROR] effect.AccountCount(): %s", err)
 	}
+
 	return
 }
 
@@ -205,6 +207,7 @@ func ItemCount(db interface{}, filter Filter) (count int) {
 	if err != nil {
 		log.Printf("[ERROR] effect.ItemCount(): %s", err)
 	}
+
 	return
 }
 
@@ -215,6 +218,12 @@ func Get(db interface{}, filter Filter) (effects []Effect, err error) {
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] effect.Get(): %s", err)
 	}
+
+	// Convert int64 fields to strings
+	for i, _ := range effects {
+		effects[i].Convert()
+	}
+
 	return
 }
 
