@@ -46,7 +46,7 @@ func TestStats(t *testing.T) {
 			http.StatusOK,
 			[]string{
 				fmt.Sprintf(`"asset_code":"%s"`, cndy.AssetCode),
-				`"effect_count":8`,
+				`"payments":3`,
 				`"accounts_involved":3`,
 				`"amount_issued":"1100.0000000"`,
 				`"trustlines_created":2`,
@@ -63,7 +63,7 @@ func TestStats(t *testing.T) {
 			http.StatusOK,
 			[]string{
 				fmt.Sprintf(`"asset_code":"%s"`, cndy.AssetCode),
-				`"effect_count":4`,
+				`"payments":2`,
 				`"accounts_involved":3`,
 				`"amount_issued":"100.0000000"`,
 				`"trustlines_created":0`,
@@ -80,7 +80,7 @@ func TestStats(t *testing.T) {
 			http.StatusOK,
 			[]string{
 				fmt.Sprintf(`"asset_code":"%s"`, cndy.AssetCode),
-				`"effect_count":5`,
+				`"payments":1`,
 				`"accounts_involved":3`,
 				`"amount_issued":"1000.0000000"`,
 				`"trustlines_created":2`,
@@ -97,7 +97,7 @@ func TestStats(t *testing.T) {
 			http.StatusOK,
 			[]string{
 				fmt.Sprintf(`"asset_code":"%s"`, cndy.AssetCode),
-				`"effect_count":3`,
+				`"payments":1`,
 				`"accounts_involved":3`,
 				`"amount_issued":"1000.0000000"`,
 				`"trustlines_created":1`,

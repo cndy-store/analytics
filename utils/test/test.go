@@ -32,15 +32,15 @@ type AssetStat struct {
 	PagingToken string
 	TotalAmount int64
 	NumAccounts int32
-	NumEffects  int32
+	Payments    int32
 	CreatedAt   time.Time
 }
 
 var AssetStats = []AssetStat{
-	{"39819440072110101-0", 10000000000, 10, 50, time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
-	{"39819440072110101-1", 10000000000, 12, 60, time.Date(2018, time.March, 14, 0, 0, 0, 0, time.UTC)},
-	{"39819440072110101-2", 20000000000, 15, 70, time.Date(2018, time.March, 16, 0, 0, 0, 0, time.UTC)},
-	{"39819440072110101-3", 20000000000, 22, 80, time.Date(2018, time.March, 18, 0, 0, 0, 0, time.UTC)},
+	{"39819440072110101-0", 10000000000, 10, 20, time.Date(2018, time.March, 12, 0, 0, 0, 0, time.UTC)},
+	{"39819440072110101-1", 10000000000, 12, 25, time.Date(2018, time.March, 14, 0, 0, 0, 0, time.UTC)},
+	{"39819440072110101-2", 20000000000, 15, 30, time.Date(2018, time.March, 16, 0, 0, 0, 0, time.UTC)},
+	{"39819440072110101-3", 20000000000, 22, 35, time.Date(2018, time.March, 18, 0, 0, 0, 0, time.UTC)},
 }
 
 // Helper function to insert test data
@@ -65,9 +65,9 @@ func InsertEffects(tx *sqlx.Tx) (err error) {
 
 func InsertAssetStats(tx *sqlx.Tx) (err error) {
 	for _, data := range AssetStats {
-		_, err = tx.Exec(`INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, total_amount, num_accounts, num_effects, created_at)
+		_, err = tx.Exec(`INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, total_amount, num_accounts, payments, created_at)
 			              VALUES($1, $2, $3, 'credit_alphanum4', $4, $5, $6, $7)`,
-			data.PagingToken, cndy.AssetCode, cndy.AssetIssuer, data.TotalAmount, data.NumAccounts, data.NumEffects, data.CreatedAt)
+			data.PagingToken, cndy.AssetCode, cndy.AssetIssuer, data.TotalAmount, data.NumAccounts, data.Payments, data.CreatedAt)
 		if err != nil {
 			return
 		}
