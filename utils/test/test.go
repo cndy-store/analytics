@@ -57,10 +57,5 @@ func InsertTestData(tx *sqlx.Tx) (err error) {
 		}
 	}
 
-	_, err = tx.Exec(`SELECT repopulate_asset_stats()`)
-	if err != nil {
-		return
-	}
-
 	return
 }

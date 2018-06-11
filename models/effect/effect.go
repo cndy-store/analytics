@@ -2,7 +2,6 @@ package effect
 
 import (
 	"encoding/json"
-	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
@@ -105,12 +104,6 @@ func New(db sql.Database, effect horizon.Effect) (err error) {
 		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code,
 		effect.Signer.PublicKey, effect.Signer.Weight, effect.Signer.Key, effect.Signer.Type,
 		operation.CreatedAt)
-	if err != nil {
-		return
-	}
-
-	// Store asset stats upon insert in a different table
-	err = assetStat.New(db, effect, operation.CreatedAt)
 	if err != nil {
 		return
 	}
