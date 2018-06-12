@@ -91,7 +91,7 @@ const htmlData = `
 	<a class="sourceLine" id="cb3-6" data-line-number="6">      <span class="dt">&quot;asset_code&quot;</span><span class="fu">:</span> <span class="st">&quot;CNDY&quot;</span><span class="fu">,</span></a>
 	<a class="sourceLine" id="cb3-7" data-line-number="7">      <span class="dt">&quot;asset_issuer&quot;</span><span class="fu">:</span> <span class="st">&quot;GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX&quot;</span><span class="fu">,</span></a>
 	<a class="sourceLine" id="cb3-8" data-line-number="8">      <span class="dt">&quot;num_accounts&quot;</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></a>
-	<a class="sourceLine" id="cb3-9" data-line-number="9">      <span class="dt">&quot;num_effects&quot;</span><span class="fu">:</span> <span class="dv">58</span><span class="fu">,</span></a>
+	<a class="sourceLine" id="cb3-9" data-line-number="9">      <span class="dt">&quot;payments&quot;</span><span class="fu">:</span> <span class="dv">58</span><span class="fu">,</span></a>
 	<a class="sourceLine" id="cb3-10" data-line-number="10">      <span class="dt">&quot;created_at&quot;</span><span class="fu">:</span> <span class="st">&quot;2018-03-24T08:24:06Z&quot;</span><span class="fu">,</span></a>
 	<a class="sourceLine" id="cb3-11" data-line-number="11">      <span class="dt">&quot;total_amount&quot;</span><span class="fu">:</span> <span class="st">&quot;4000.0000000&quot;</span></a>
 	<a class="sourceLine" id="cb3-12" data-line-number="12">    <span class="fu">}</span><span class="ot">,</span></a>
@@ -101,7 +101,7 @@ const htmlData = `
 	<a class="sourceLine" id="cb3-16" data-line-number="16">      <span class="dt">&quot;asset_code&quot;</span><span class="fu">:</span> <span class="st">&quot;CNDY&quot;</span><span class="fu">,</span></a>
 	<a class="sourceLine" id="cb3-17" data-line-number="17">      <span class="dt">&quot;asset_issuer&quot;</span><span class="fu">:</span> <span class="st">&quot;GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX&quot;</span><span class="fu">,</span></a>
 	<a class="sourceLine" id="cb3-18" data-line-number="18">      <span class="dt">&quot;num_accounts&quot;</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></a>
-	<a class="sourceLine" id="cb3-19" data-line-number="19">      <span class="dt">&quot;num_effects&quot;</span><span class="fu">:</span> <span class="dv">59</span><span class="fu">,</span></a>
+	<a class="sourceLine" id="cb3-19" data-line-number="19">      <span class="dt">&quot;payments&quot;</span><span class="fu">:</span> <span class="dv">59</span><span class="fu">,</span></a>
 	<a class="sourceLine" id="cb3-20" data-line-number="20">      <span class="dt">&quot;created_at&quot;</span><span class="fu">:</span> <span class="st">&quot;2018-03-24T08:24:06Z&quot;</span><span class="fu">,</span></a>
 	<a class="sourceLine" id="cb3-21" data-line-number="21">      <span class="dt">&quot;total_amount&quot;</span><span class="fu">:</span> <span class="st">&quot;4000.0000000&quot;</span></a>
 	<a class="sourceLine" id="cb3-22" data-line-number="22">    <span class="fu">}</span></a>

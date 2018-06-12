@@ -141,7 +141,7 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
       "asset_code": "CNDY",
       "asset_issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
       "num_accounts": 10,
-      "num_effects": 58,
+      "payments": 25,
       "created_at": "2018-03-24T08:24:06Z",
       "total_amount": "4000.0000000"
     },
@@ -151,7 +151,7 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
       "asset_code": "CNDY",
       "asset_issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
       "num_accounts": 10,
-      "num_effects": 59,
+      "payments": 28,
       "created_at": "2018-03-24T08:24:06Z",
       "total_amount": "4000.0000000"
     }

@@ -26,7 +26,7 @@ func Init(db interface{}, router *gin.Engine) {
 
 		c.JSON(http.StatusOK, gin.H{
 			"asset_code":         cndy.AssetCode,
-			"effect_count":       effect.ItemCount(db, effect.Filter{From: from, To: to}),
+			"payments":           effect.TotalCount(db, effect.Filter{Type: "account_debited", From: from, To: to}),
 			"accounts_involved":  effect.AccountCount(db, effect.Filter{From: from, To: to}),
 			"amount_transferred": bigint.ToString(effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to})),
 			"trustlines_created": effect.TotalCount(db, effect.Filter{Type: "trustline_created", From: from, To: to}),

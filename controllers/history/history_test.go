@@ -112,7 +112,7 @@ func TestHistory(t *testing.T) {
 			s = append(s, fmt.Sprintf(`"paging_token":"%s"`, e.PagingToken))
 			s = append(s, fmt.Sprintf(`"total_amount":"%s"`, bigint.ToString(e.TotalAmount)))
 			s = append(s, fmt.Sprintf(`"num_accounts":%d`, e.NumAccounts))
-			s = append(s, fmt.Sprintf(`"num_effects":%d`, e.NumEffects))
+			s = append(s, fmt.Sprintf(`"payments":%d`, e.Payments))
 
 			for _, contains := range s {
 				if !strings.Contains(resp.Body.String(), contains) {

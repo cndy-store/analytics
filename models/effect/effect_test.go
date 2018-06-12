@@ -158,8 +158,8 @@ func TestNew(t *testing.T) {
 	if *a.NumAccounts != 1 {
 		t.Errorf("Expected 1 got %v", *a.NumAccounts)
 	}
-	if *a.NumEffects != 1 {
-		t.Errorf("Expected 1 got %v", *a.NumEffects)
+	if *a.Payments != 1 {
+		t.Errorf("Expected 1 got %v", *a.Payments)
 	}
 	if *e.CreatedAt != *a.CreatedAt {
 		t.Errorf("Expected %v got %v", e.CreatedAt, *a.CreatedAt)
