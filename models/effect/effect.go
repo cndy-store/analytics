@@ -149,7 +149,7 @@ func TotalAmount(db interface{}, filter Filter) (amount int64) {
 		return
 	}
 
-	err := sql.Get(db, &amount, `SELECT SUM(amount) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
+	err := sql.Get(db, &amount, `SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
 		filter.Type, filter.From, filter.To)
 	if err != nil {
 		log.Print(err)
@@ -163,7 +163,7 @@ func TotalAmount(db interface{}, filter Filter) (amount int64) {
 func TotalIssued(db interface{}, issuer string, filter Filter) (issued int64) {
 	filter.Defaults()
 
-	err := sql.Get(db, &issued, `SELECT SUM(amount) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
+	err := sql.Get(db, &issued, `SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type='account_debited' AND account=$1 AND created_at BETWEEN $2::timestamp AND $3::timestamp`,
 		issuer, filter.From, filter.To)
 	if err != nil {
 		log.Print(err)
