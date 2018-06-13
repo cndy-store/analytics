@@ -1,9 +1,17 @@
-ALTER TABLE asset_stats DROP COLUMN total_amount;
-ALTER TABLE asset_stats DROP COLUMN num_accounts;
-ALTER TABLE asset_stats ADD COLUMN issued bigint;
-ALTER TABLE asset_stats ADD COLUMN transferred bigint;
-ALTER TABLE asset_stats ADD COLUMN accounts_with_trustline integer;
-ALTER TABLE asset_stats ADD COLUMN accounts_with_payments integer;
+DROP TABLE asset_stats;
+CREATE TABLE asset_stats (
+  id serial PRIMARY KEY,
+  paging_token character varying(64),
+  asset_type character varying(64),
+  asset_code character varying(12),
+  asset_issuer character varying(56),
+  issued bigint,
+  transferred bigint,
+  accounts_with_trustline integer,
+  accounts_with_payments integer,
+  payments integer,
+  created_at timestamp without time zone
+);
 
 CREATE OR REPLACE FUNCTION repopulate_asset_stats()
   RETURNS VOID

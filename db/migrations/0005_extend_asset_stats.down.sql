@@ -1,9 +1,15 @@
-ALTER TABLE asset_stats DROP COLUMN issued;
-ALTER TABLE asset_stats DROP COLUMN transferred;
-ALTER TABLE asset_stats DROP COLUMN accounts_with_trustline;
-ALTER TABLE asset_stats DROP COLUMN accounts_with_payments;
-ALTER TABLE asset_stats ADD COLUMN total_amount bigint;
-ALTER TABLE asset_stats ADD COLUMN num_accounts integer;
+-- NOTE: Taken from migration 0003
+DROP TABLE asset_stats;
+CREATE TABLE asset_stats (
+  paging_token character varying(64) PRIMARY KEY,
+  asset_type character varying(64),
+  asset_code character varying(12),
+  asset_issuer character varying(56),
+  total_amount bigint,
+  num_accounts integer,
+  payments integer,
+  created_at timestamp without time zone
+);
 
 -- NOTE: Taken from migration 0004
 CREATE OR REPLACE FUNCTION repopulate_asset_stats()
