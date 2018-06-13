@@ -28,8 +28,8 @@ func New(db interface{}, effect horizon.Effect, timestamp time.Time) (err error)
 	_, err = sql.Exec(db, `INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, created_at, total_amount, num_accounts, payments)
 		                   VALUES ($1, $2, $3, $4, $5,
 		                       (SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type='account_debited' AND account=$6),
-		                       (SELECT COUNT(DISTINCT account) FROM effects),
-		                       (SELECT COUNT(*) FROM effects WHERE type='account_debited')
+		                       (SELECT COUNT(DISTINCT account) FROM effects WHERE account != $6),
+		                       (SELECT COUNT(*) FROM effects WHERE type='account_debited AND account != $6')
 		                   )`,
 		effect.PT, effect.Asset.Code, effect.Asset.Issuer, effect.Asset.Type, timestamp, effect.Asset.Issuer)
 
