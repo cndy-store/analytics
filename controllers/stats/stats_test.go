@@ -35,7 +35,7 @@ func TestStats(t *testing.T) {
 	defer tx.Rollback()
 
 	// Insert test data
-	test.InsertEffects(tx)
+	test.InsertTestData(tx)
 
 	var tests = []HttpTest{
 		{
@@ -45,11 +45,11 @@ func TestStats(t *testing.T) {
 			http.StatusOK,
 			[]string{
 				fmt.Sprintf(`"asset_code":"%s"`, cndy.AssetCode),
-				`"payments":3`,
-				`"accounts_involved":3`,
-				`"amount_issued":"1100.0000000"`,
-				`"trustlines_created":2`,
-				`"amount_transferred":"1115.0000000"`,
+				`"payments":4`,
+				`"accounts_involved":4`,
+				`"amount_issued":"1000.0000000"`,
+				`"trustlines_created":3`,
+				`"amount_transferred":"1125.0000000"`,
 				fmt.Sprintf(`"current_cursor":"%s"`, cndy.GenesisCursor),
 			},
 		},

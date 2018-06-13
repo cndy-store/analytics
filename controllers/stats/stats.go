@@ -12,6 +12,7 @@ import (
 func Init(db interface{}, router *gin.Engine) {
 	// GET /cndy/stats
 	router.GET("/stats", func(c *gin.Context) {
+		// TODO: /history/latest could be used.
 		c.JSON(http.StatusOK, gin.H{
 			"asset_code":         cndy.AssetCode,
 			"payments":           effect.TotalCount(db, effect.Filter{Type: "account_debited"}),

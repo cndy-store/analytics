@@ -178,7 +178,7 @@ func TestGet(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = test.InsertEffects(tx)
+	err = test.InsertTestData(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -256,7 +256,7 @@ func TestAccountCount(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = test.InsertEffects(tx)
+	err = test.InsertTestData(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -298,7 +298,7 @@ func TestTotalIssued(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = test.InsertEffects(tx)
+	err = test.InsertTestData(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -340,7 +340,7 @@ func TestTotalAmount(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = test.InsertEffects(tx)
+	err = test.InsertTestData(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -382,7 +382,7 @@ func TestTotalCount(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = test.InsertEffects(tx)
+	err = test.InsertTestData(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -424,7 +424,7 @@ func TestItemCount(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = test.InsertEffects(tx)
+	err = test.InsertTestData(tx)
 	if err != nil {
 		t.Error(err)
 	}

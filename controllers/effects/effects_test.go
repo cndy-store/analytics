@@ -35,7 +35,7 @@ func TestEffects(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = test.InsertEffects(tx)
+	err = test.InsertTestData(tx)
 	if err != nil {
 		t.Error(err)
 	}

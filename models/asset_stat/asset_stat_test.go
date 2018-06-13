@@ -18,7 +18,7 @@ func TestGet(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = test.InsertAssetStats(tx)
+	err = test.InsertTestData(tx)
 	if err != nil {
 		t.Error(err)
 	}

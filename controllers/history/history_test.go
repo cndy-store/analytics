@@ -21,7 +21,7 @@ type HttpTest struct {
 	url           string
 	body          string
 	statusCode    int
-	expectedStats []test.AssetStat
+	expectedStats []test.Effect
 }
 
 func TestHistory(t *testing.T) {
@@ -36,7 +36,7 @@ func TestHistory(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	err = test.InsertAssetStats(tx)
+	err = test.InsertTestData(tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -47,49 +47,49 @@ func TestHistory(t *testing.T) {
 			"/history",
 			"",
 			http.StatusOK,
-			test.AssetStats,
+			test.Effects,
 		},
 
 		// Filter{From}
 		{
 			"GET",
-			fmt.Sprintf("/history?from=%s", test.AssetStats[2].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/history?from=%s", test.Effects[4].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
-			test.AssetStats[2:],
+			test.Effects[4:],
 		},
 
 		// Filter{To}
 		{
 			"GET",
-			fmt.Sprintf("/history?to=%s", test.AssetStats[1].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/history?to=%s", test.Effects[2].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
-			test.AssetStats[:2],
+			test.Effects[:3],
 		},
 
 		// Filter{From, To}
 		{
 			"GET",
-			fmt.Sprintf("/history?from=%s&to=%s", test.AssetStats[1].CreatedAt.Format(time.RFC3339), test.AssetStats[2].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/history?from=%s&to=%s", test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[6].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
-			test.AssetStats[1:3],
+			test.Effects[3:7],
 		},
 	}
 
 	router := gin.Default()
 	Init(tx, router)
 
-	for _, test := range tests {
-		body := bytes.NewBufferString(test.body)
-		req, _ := http.NewRequest(test.method, test.url, body)
+	for _, tt := range tests {
+		body := bytes.NewBufferString(tt.body)
+		req, _ := http.NewRequest(tt.method, tt.url, body)
 		resp := httptest.NewRecorder()
 
 		router.ServeHTTP(resp, req)
 
-		if resp.Code != test.statusCode {
-			t.Errorf("Expected code %v, got %v, for %+v", test.statusCode, resp.Code, test)
+		if resp.Code != tt.statusCode {
+			t.Errorf("Expected code %v, got %v, for %+v", tt.statusCode, resp.Code, tt)
 		}
 
 		history := make(map[string][]assetStat.AssetStat)
@@ -103,11 +103,11 @@ func TestHistory(t *testing.T) {
 			t.Error(`Expected element "history" in JSON response`)
 		}
 
-		if len(history["history"]) != len(test.expectedStats) {
-			t.Errorf("Expected %d JSON elements, got %d", len(test.expectedStats), len(history["history"]))
+		if len(history["history"]) != len(tt.expectedStats) {
+			t.Errorf("Expected %d JSON elements, got %d", len(tt.expectedStats), len(history["history"]))
 		}
 
-		for _, e := range test.expectedStats {
+		for _, e := range tt.expectedStats {
 			var s []string
 			s = append(s, fmt.Sprintf(`"paging_token":"%s"`, e.PagingToken))
 			s = append(s, fmt.Sprintf(`"total_amount":"%s"`, bigint.ToString(e.TotalAmount)))
