@@ -12,7 +12,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 )
 
 type HttpTest struct {
@@ -51,57 +50,6 @@ func TestStats(t *testing.T) {
 				`"amount_issued":"1100.0000000"`,
 				`"trustlines_created":2`,
 				`"amount_transferred":"1115.0000000"`,
-				fmt.Sprintf(`"current_cursor":"%s"`, cndy.GenesisCursor),
-			},
-		},
-
-		// Filter{From}
-		{
-			"GET",
-			fmt.Sprintf("/stats?from=%s", test.Effects[4].CreatedAt.Format(time.RFC3339)),
-			"",
-			http.StatusOK,
-			[]string{
-				fmt.Sprintf(`"asset_code":"%s"`, cndy.AssetCode),
-				`"payments":2`,
-				`"accounts_involved":3`,
-				`"amount_issued":"100.0000000"`,
-				`"trustlines_created":0`,
-				`"amount_transferred":"115.0000000"`,
-				fmt.Sprintf(`"current_cursor":"%s"`, cndy.GenesisCursor),
-			},
-		},
-
-		// Filter{To}
-		{
-			"GET",
-			fmt.Sprintf("/stats?to=%s", test.Effects[4].CreatedAt.Format(time.RFC3339)),
-			"",
-			http.StatusOK,
-			[]string{
-				fmt.Sprintf(`"asset_code":"%s"`, cndy.AssetCode),
-				`"payments":1`,
-				`"accounts_involved":3`,
-				`"amount_issued":"1000.0000000"`,
-				`"trustlines_created":2`,
-				`"amount_transferred":"1015.0000000"`,
-				fmt.Sprintf(`"current_cursor":"%s"`, cndy.GenesisCursor),
-			},
-		},
-
-		// Filter{From, To}
-		{
-			"GET",
-			fmt.Sprintf("/stats?from=%s&to=%s", test.Effects[1].CreatedAt.Format(time.RFC3339), test.Effects[3].CreatedAt.Format(time.RFC3339)),
-			"",
-			http.StatusOK,
-			[]string{
-				fmt.Sprintf(`"asset_code":"%s"`, cndy.AssetCode),
-				`"payments":1`,
-				`"accounts_involved":3`,
-				`"amount_issued":"1000.0000000"`,
-				`"trustlines_created":1`,
-				`"amount_transferred":"1000.0000000"`,
 				fmt.Sprintf(`"current_cursor":"%s"`, cndy.GenesisCursor),
 			},
 		},
