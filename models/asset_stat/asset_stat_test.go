@@ -42,12 +42,20 @@ func TestGet(t *testing.T) {
 	}
 
 	for i, e := range test.Effects[2:] {
-		if e.TotalAmount != *assetStats[i].TotalAmount {
-			t.Errorf("Expected %d got: %d", e.TotalAmount, *assetStats[i].TotalAmount)
+		if e.Issued != *assetStats[i].Issued {
+			t.Errorf("Expected %d got: %d", e.Issued, *assetStats[i].Issued)
 		}
 
-		if e.NumAccounts != *assetStats[i].NumAccounts {
-			t.Errorf("Expected %d got: %d", e.NumAccounts, *assetStats[i].NumAccounts)
+		if e.Transferred != *assetStats[i].Transferred {
+			t.Errorf("Expected %d got: %d", e.Transferred, *assetStats[i].Transferred)
+		}
+
+		if e.AccountsWithTrustline != *assetStats[i].AccountsWithTrustline {
+			t.Errorf("Expected %d got: %d", e.AccountsWithTrustline, *assetStats[i].AccountsWithTrustline)
+		}
+
+		if e.AccountsWithPayments != *assetStats[i].AccountsWithPayments {
+			t.Errorf("Expected %d got: %d", e.AccountsWithPayments, *assetStats[i].AccountsWithPayments)
 		}
 
 		if e.Payments != *assetStats[i].Payments {
@@ -65,12 +73,20 @@ func TestGet(t *testing.T) {
 	}
 
 	for i, e := range test.Effects[:2] {
-		if e.TotalAmount != *assetStats[i].TotalAmount {
-			t.Errorf("Expected %d got: %d", e.TotalAmount, *assetStats[i].TotalAmount)
+		if e.Issued != *assetStats[i].Issued {
+			t.Errorf("Expected %d got: %d", e.Issued, *assetStats[i].Issued)
 		}
 
-		if e.NumAccounts != *assetStats[i].NumAccounts {
-			t.Errorf("Expected %d got: %d", e.NumAccounts, *assetStats[i].NumAccounts)
+		if e.Transferred != *assetStats[i].Transferred {
+			t.Errorf("Expected %d got: %d", e.Transferred, *assetStats[i].Transferred)
+		}
+
+		if e.AccountsWithTrustline != *assetStats[i].AccountsWithTrustline {
+			t.Errorf("Expected %d got: %d", e.AccountsWithTrustline, *assetStats[i].AccountsWithTrustline)
+		}
+
+		if e.AccountsWithPayments != *assetStats[i].AccountsWithPayments {
+			t.Errorf("Expected %d got: %d", e.AccountsWithPayments, *assetStats[i].AccountsWithPayments)
 		}
 
 		if e.Payments != *assetStats[i].Payments {
@@ -88,12 +104,20 @@ func TestGet(t *testing.T) {
 	}
 
 	for i, e := range test.Effects[1:3] {
-		if e.TotalAmount != *assetStats[i].TotalAmount {
-			t.Errorf("Expected %d got: %d", e.TotalAmount, *assetStats[i].TotalAmount)
+		if e.Issued != *assetStats[i].Issued {
+			t.Errorf("Expected %d got: %d", e.Issued, *assetStats[i].Issued)
 		}
 
-		if e.NumAccounts != *assetStats[i].NumAccounts {
-			t.Errorf("Expected %d got: %d", e.NumAccounts, *assetStats[i].NumAccounts)
+		if e.Transferred != *assetStats[i].Transferred {
+			t.Errorf("Expected %d got: %d", e.Transferred, *assetStats[i].Transferred)
+		}
+
+		if e.AccountsWithTrustline != *assetStats[i].AccountsWithTrustline {
+			t.Errorf("Expected %d got: %d", e.AccountsWithTrustline, *assetStats[i].AccountsWithTrustline)
+		}
+
+		if e.AccountsWithPayments != *assetStats[i].AccountsWithPayments {
+			t.Errorf("Expected %d got: %d", e.AccountsWithPayments, *assetStats[i].AccountsWithPayments)
 		}
 
 		if e.Payments != *assetStats[i].Payments {
@@ -127,23 +151,34 @@ func TestLatest(t *testing.T) {
 
 	// Compare to latest test.Effects[]
 	lastEffect := test.Effects[len(test.Effects)-1]
-	if lastEffect.TotalAmount != *assetStats.TotalAmount {
-		t.Errorf("Expected %d got %d", lastEffect.TotalAmount, *assetStats.TotalAmount)
+
+	if lastEffect.Issued != *assetStats.Issued {
+		t.Errorf("Expected %d got: %d", lastEffect.Issued, *assetStats.Issued)
 	}
-	if lastEffect.NumAccounts != *assetStats.NumAccounts {
-		t.Errorf("Expected %d got %d", lastEffect.NumAccounts, *assetStats.NumAccounts)
+
+	if lastEffect.Transferred != *assetStats.Transferred {
+		t.Errorf("Expected %d got: %d", lastEffect.Transferred, *assetStats.Transferred)
 	}
+
+	if lastEffect.AccountsWithTrustline != *assetStats.AccountsWithTrustline {
+		t.Errorf("Expected %d got: %d", lastEffect.AccountsWithTrustline, *assetStats.AccountsWithTrustline)
+	}
+
+	if lastEffect.AccountsWithPayments != *assetStats.AccountsWithPayments {
+		t.Errorf("Expected %d got: %d", lastEffect.AccountsWithPayments, *assetStats.AccountsWithPayments)
+	}
+
 	if lastEffect.Payments != *assetStats.Payments {
-		t.Errorf("Expected %d got %d", lastEffect.Payments, *assetStats.Payments)
+		t.Errorf("Expected %d got: %d", lastEffect.Payments, *assetStats.Payments)
 	}
 }
 
 func TestConvert(t *testing.T) {
 	amount := int64(500000000)
-	assetStat := AssetStat{TotalAmount: &amount}
+	assetStat := AssetStat{Issued: &amount}
 	assetStat.Convert()
 
-	if *assetStat.JsonTotalAmount != "50.0000000" {
-		t.Errorf("Expected 50.0000000, got %s", *assetStat.JsonTotalAmount)
+	if *assetStat.JsonIssued != "50.0000000" {
+		t.Errorf("Expected 50.0000000, got %s", *assetStat.JsonIssued)
 	}
 }
