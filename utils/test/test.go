@@ -54,7 +54,7 @@ func InsertEffects(tx *sqlx.Tx) (err error) {
 
 		_, err = sql.Exec(tx, `INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, asset_type, asset_issuer, asset_code, created_at)
 			                    VALUES($1, 'https://horizon-testnet.stellar.org/operations/34028708058632193', $2, $3, $4, $5, 'credit_alphanum4', $6, $7, $8)`,
-			fmt.Sprintf("0034028708058632193-000000000%d", i), data.PagingToken, data.Account, amount, data.Type, cndy.AssetIssuer, cndy.AssetCode, data.CreatedAt)
+			fmt.Sprintf("0034028708058632193-%09d", i), data.PagingToken, data.Account, amount, data.Type, cndy.AssetIssuer, cndy.AssetCode, data.CreatedAt)
 		if err != nil {
 			return
 		}
