@@ -69,6 +69,17 @@ func Get(db interface{}, filter Filter) (stats []AssetStat, err error) {
 	return
 }
 
+func Latest(db interface{}) (stats AssetStat, err error) {
+	err = sql.Get(db, &stats, `SELECT * FROM asset_stats ORDER BY created_at DESC LIMIT 1`)
+	if err == sql.ErrNoRows {
+		log.Printf("[ERROR] asset_stat.Latest(): %s", err)
+	}
+
+	// Convert int64 fields to strings
+	stats.Convert()
+	return
+}
+
 // Convert int64 fields of to strings
 func (a *AssetStat) Convert() {
 	if a.TotalAmount != nil {

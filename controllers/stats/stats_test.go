@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/cndy-store/analytics/models/cursor"
+	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/cndy-store/analytics/utils/test"
@@ -37,6 +38,7 @@ func TestStats(t *testing.T) {
 	// Insert test data
 	test.InsertTestData(tx)
 
+	latestEffect := test.Effects[len(test.Effects)-1]
 	var tests = []HttpTest{
 		{
 			"GET",
@@ -44,12 +46,9 @@ func TestStats(t *testing.T) {
 			"",
 			http.StatusOK,
 			[]string{
-				fmt.Sprintf(`"asset_code":"%s"`, cndy.AssetCode),
-				`"payments":4`,
-				`"accounts_involved":4`,
-				`"amount_issued":"1000.0000000"`,
-				`"trustlines_created":3`,
-				`"amount_transferred":"1125.0000000"`,
+				fmt.Sprintf(`"total_amount":"%s"`, bigint.ToString(latestEffect.TotalAmount)),
+				fmt.Sprintf(`"num_accounts":%d`, latestEffect.NumAccounts),
+				fmt.Sprintf(`"payments":%d`, latestEffect.Payments),
 				fmt.Sprintf(`"current_cursor":"%s"`, cndy.GenesisCursor),
 			},
 		},
