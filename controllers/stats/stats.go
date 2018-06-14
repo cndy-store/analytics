@@ -1,10 +1,8 @@
 package stats
 
 import (
+	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/models/cursor"
-	"github.com/cndy-store/analytics/models/effect"
-	"github.com/cndy-store/analytics/utils/bigint"
-	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -12,7 +10,7 @@ import (
 )
 
 func Init(db interface{}, router *gin.Engine) {
-	// GET /cndy/stats[?from=XXX&to=XXX]
+	// GET /stats[?from=XXX&to=XXX]
 	router.GET("/stats", func(c *gin.Context) {
 		from, to, err := filter.Parse(c)
 		if err != nil {
@@ -24,14 +22,36 @@ func Init(db interface{}, router *gin.Engine) {
 			return
 		}
 
+		assetStats, err := assetStat.Get(db, assetStat.Filter{From: from, To: to})
+		if err != nil {
+			log.Printf("[ERROR] Couldn't get asset stats from database: %s", err)
+			c.String(http.StatusInternalServerError, "")
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"asset_code":         cndy.AssetCode,
-			"payments":           effect.TotalCount(db, effect.Filter{Type: "account_debited", From: from, To: to}),
-			"accounts_involved":  effect.AccountCount(db, effect.Filter{From: from, To: to}),
-			"amount_transferred": bigint.ToString(effect.TotalAmount(db, effect.Filter{Type: "account_credited", From: from, To: to})),
-			"trustlines_created": effect.TotalCount(db, effect.Filter{Type: "trustline_created", From: from, To: to}),
-			"amount_issued":      bigint.ToString(effect.TotalIssued(db, cndy.AssetIssuer, effect.Filter{From: from, To: to})),
-			"current_cursor":     cursor.Current,
+			"stats": assetStats,
+		})
+		return
+	})
+
+	router.GET("/stats/latest", func(c *gin.Context) {
+		latest, err := assetStat.Latest(db)
+		if err != nil {
+			log.Printf("[ERROR] Couldn't get asset stats from database: %s", err)
+			c.String(http.StatusInternalServerError, "")
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"latest": latest,
+		})
+		return
+	})
+
+	router.GET("/stats/cursor", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"current_cursor": cursor.Current,
 		})
 		return
 	})
