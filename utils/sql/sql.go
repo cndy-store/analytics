@@ -2,7 +2,6 @@ package sql
 
 import (
 	"database/sql"
-	"errors"
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
 	_ "github.com/golang-migrate/migrate/source/file"
@@ -11,6 +10,14 @@ import (
 )
 
 var ErrNoRows = sql.ErrNoRows
+
+type Database interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Get(dest interface{}, query string, args ...interface{}) error
+	Select(dest interface{}, query string, args ...interface{}) error
+	PrepareNamed(query string) (*sqlx.NamedStmt, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+}
 
 // Open production database and run migrations
 func OpenAndMigrate(relPath string) (db *sqlx.DB, err error) {
@@ -45,56 +52,24 @@ func OpenAndMigrate(relPath string) (db *sqlx.DB, err error) {
 }
 
 // Exec is a type agnostic wrapper for sqlx.Exec() (works with sqlx.DB and sqlx.Tx)
-func Exec(db interface{}, query string, args ...interface{}) (result sql.Result, err error) {
-	switch db.(type) {
-	case *sqlx.DB:
-		result, err = db.(*sqlx.DB).Exec(query, args...)
-	case *sqlx.Tx:
-		result, err = db.(*sqlx.Tx).Exec(query, args...)
-	default:
-		err = errors.New("Unknown DB interface{} in sql.Exec()")
-	}
-	return
+func Exec(db Database, query string, args ...interface{}) (result sql.Result, err error) {
+	return db.Exec(query, args...)
 }
 
 // Getis a type agnostic wrapper for sqlx.Get() (works with sqlx.DB and sqlx.Tx)
-func Get(db, obj interface{}, query string, args ...interface{}) (err error) {
-	switch db.(type) {
-	case *sqlx.DB:
-		err = db.(*sqlx.DB).Get(obj, query, args...)
-	case *sqlx.Tx:
-		err = db.(*sqlx.Tx).Get(obj, query, args...)
-	default:
-		err = errors.New("Unknown DB interface{} in sql.Get()")
-	}
-	return
+func Get(db Database, obj interface{}, query string, args ...interface{}) (err error) {
+	return db.Get(obj, query, args...)
 }
 
 // Select is a type agnostic wrapper for sqlx.Select() (works with sqlx.DB and sqlx.Tx)
-func Select(db interface{}, obj interface{}, query string, args ...interface{}) (err error) {
-	switch db.(type) {
-	case *sqlx.DB:
-		err = db.(*sqlx.DB).Select(obj, query, args...)
-	case *sqlx.Tx:
-		err = db.(*sqlx.Tx).Select(obj, query, args...)
-	default:
-		err = errors.New("Unknown DB interface{} in sql.Select()")
-	}
-	return
+func Select(db Database, obj interface{}, query string, args ...interface{}) (err error) {
+	return db.Select(obj, query, args...)
 }
 
 // NamedQuery is a type agnostic wrapper for sqlx.NamedQuery() (works with sqlx.DB and sqlx.Tx)
-func NamedQuery(db interface{}, obj interface{}, query string, arg interface{}) (err error) {
+func NamedQuery(db Database, obj interface{}, query string, arg interface{}) (err error) {
 	var stmt *sqlx.NamedStmt
-
-	switch db.(type) {
-	case *sqlx.DB:
-		stmt, err = db.(*sqlx.DB).PrepareNamed(query)
-	case *sqlx.Tx:
-		stmt, err = db.(*sqlx.Tx).PrepareNamed(query)
-	default:
-		err = errors.New("Unknown DB interface{} in sql.NamedQuery()")
-	}
+	stmt, err = db.PrepareNamed(query)
 
 	if err != nil {
 		return
@@ -110,20 +85,12 @@ func NamedQuery(db interface{}, obj interface{}, query string, arg interface{}) 
 }
 
 // Exists is a type agnostic function that checks whether a statement returns a row
-func Exists(db interface{}, query string, args ...interface{}) (exists bool, err error) {
+func Exists(db Database, query string, args ...interface{}) (exists bool, err error) {
 	var row *sql.Row
 
 	// Prepare exists query
 	query = `SELECT EXISTS(` + query + `) LIMIT 1`
-
-	switch db.(type) {
-	case *sqlx.DB:
-		row = db.(*sqlx.DB).QueryRow(query, args...)
-	case *sqlx.Tx:
-		row = db.(*sqlx.Tx).QueryRow(query, args...)
-	default:
-		err = errors.New("Unknown DB interface{} in sql.Exists()")
-	}
+	row = db.QueryRow(query, args...)
 
 	err = row.Scan(&exists)
 	return

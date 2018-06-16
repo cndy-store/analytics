@@ -29,7 +29,7 @@ type AssetStat struct {
 	JsonTransferred *string `db:"-" json:"transferred"`
 }
 
-func New(db interface{}, effect horizon.Effect, timestamp time.Time) (err error) {
+func New(db sql.Database, effect horizon.Effect, timestamp time.Time) (err error) {
 	// Store amount_transfered and amount_issued upon insert in a different table
 	// (analogue to the asset endpoint of Horizon)
 
@@ -63,7 +63,7 @@ func (f *Filter) Defaults() {
 	}
 }
 
-func Get(db interface{}, filter Filter) (stats []AssetStat, err error) {
+func Get(db sql.Database, filter Filter) (stats []AssetStat, err error) {
 	filter.Defaults()
 	err = sql.Select(db, &stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY id`,
 		filter.From, filter.To)
@@ -79,7 +79,7 @@ func Get(db interface{}, filter Filter) (stats []AssetStat, err error) {
 	return
 }
 
-func Latest(db interface{}) (stats AssetStat, err error) {
+func Latest(db sql.Database) (stats AssetStat, err error) {
 	err = sql.Get(db, &stats, `SELECT * FROM asset_stats ORDER BY id DESC LIMIT 1`)
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] asset_stat.Latest(): %s", err)
