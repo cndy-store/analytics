@@ -80,7 +80,7 @@ func Get(db sql.Database, filter Filter) (stats []AssetStat, err error) {
 }
 
 func Latest(db sql.Database) (stats AssetStat, err error) {
-	err = sql.Get(db, &stats, `SELECT * FROM asset_stats ORDER BY id DESC LIMIT 1`)
+	err = db.Get(&stats, `SELECT * FROM asset_stats ORDER BY id DESC LIMIT 1`)
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] asset_stat.Latest(): %s", err)
 	}

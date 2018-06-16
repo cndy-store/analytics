@@ -25,7 +25,7 @@ func Save(db sql.Database) (err error) {
 
 func LoadLatest(db sql.Database) (err error) {
 	var c string
-	err = sql.Get(db, &c, `SELECT paging_token FROM cursors WHERE id=1`)
+	err = db.Get(&c, `SELECT paging_token FROM cursors WHERE id=1`)
 	if err != nil {
 		return
 	}
