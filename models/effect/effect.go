@@ -49,7 +49,7 @@ type Operation struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func New(db interface{}, effect horizon.Effect) (err error) {
+func New(db sql.Database, effect horizon.Effect) (err error) {
 	// Get operation
 	operation := getOperation(effect.Links.Operation.Href)
 
@@ -80,7 +80,7 @@ func New(db interface{}, effect horizon.Effect) (err error) {
 	}
 
 	// Just input the fields we're requiring for now, can be replayed anytime form the chain later.
-	_, err = sql.Exec(db, `INSERT INTO effects(
+	_, err = db.Exec(`INSERT INTO effects(
 			effect_id,
 			operation, succeeds, precedes,
 			paging_token, account, amount, type, type_i, starting_balance,
@@ -142,9 +142,9 @@ func (f *Filter) Defaults() {
 	}
 }
 
-func Get(db interface{}, filter Filter) (effects []Effect, err error) {
+func Get(db sql.Database, filter Filter) (effects []Effect, err error) {
 	filter.Defaults()
-	err = sql.Select(db, &effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY created_at`,
+	err = db.Select(&effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY created_at`,
 		filter.From, filter.To)
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] effect.Get(): %s", err)

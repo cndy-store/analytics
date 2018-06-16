@@ -29,11 +29,11 @@ type AssetStat struct {
 	JsonTransferred *string `db:"-" json:"transferred"`
 }
 
-func New(db interface{}, effect horizon.Effect, timestamp time.Time) (err error) {
+func New(db sql.Database, effect horizon.Effect, timestamp time.Time) (err error) {
 	// Store amount_transfered and amount_issued upon insert in a different table
 	// (analogue to the asset endpoint of Horizon)
 
-	_, err = sql.Exec(db, `INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, created_at, issued, transferred, accounts_with_trustline, accounts_with_payments, payments)
+	_, err = db.Exec(`INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, created_at, issued, transferred, accounts_with_trustline, accounts_with_payments, payments)
 		                   VALUES ($1, $2, $3, $4, $5,
 		                       (SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type='account_debited' AND account=$6),
 		                       (SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type='account_debited' AND account!=$6),
@@ -63,9 +63,9 @@ func (f *Filter) Defaults() {
 	}
 }
 
-func Get(db interface{}, filter Filter) (stats []AssetStat, err error) {
+func Get(db sql.Database, filter Filter) (stats []AssetStat, err error) {
 	filter.Defaults()
-	err = sql.Select(db, &stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY id`,
+	err = db.Select(&stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY id`,
 		filter.From, filter.To)
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] asset_stat.Get(): %s", err)
@@ -79,8 +79,8 @@ func Get(db interface{}, filter Filter) (stats []AssetStat, err error) {
 	return
 }
 
-func Latest(db interface{}) (stats AssetStat, err error) {
-	err = sql.Get(db, &stats, `SELECT * FROM asset_stats ORDER BY id DESC LIMIT 1`)
+func Latest(db sql.Database) (stats AssetStat, err error) {
+	err = db.Get(&stats, `SELECT * FROM asset_stats ORDER BY id DESC LIMIT 1`)
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] asset_stat.Latest(): %s", err)
 	}
