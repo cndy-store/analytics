@@ -80,7 +80,7 @@ func New(db sql.Database, effect horizon.Effect) (err error) {
 	}
 
 	// Just input the fields we're requiring for now, can be replayed anytime form the chain later.
-	_, err = sql.Exec(db, `INSERT INTO effects(
+	_, err = db.Exec(`INSERT INTO effects(
 			effect_id,
 			operation, succeeds, precedes,
 			paging_token, account, amount, type, type_i, starting_balance,

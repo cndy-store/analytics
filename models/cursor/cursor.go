@@ -19,7 +19,7 @@ func Update(cursor horizon.Cursor) {
 }
 
 func Save(db sql.Database) (err error) {
-	_, err = sql.Exec(db, `UPDATE cursors SET paging_token=$1 WHERE id=1`, Current)
+	_, err = db.Exec(`UPDATE cursors SET paging_token=$1 WHERE id=1`, Current)
 	return
 }
 
