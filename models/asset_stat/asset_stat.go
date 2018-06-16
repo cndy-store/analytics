@@ -33,7 +33,7 @@ func New(db sql.Database, effect horizon.Effect, timestamp time.Time) (err error
 	// Store amount_transfered and amount_issued upon insert in a different table
 	// (analogue to the asset endpoint of Horizon)
 
-	_, err = sql.Exec(db, `INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, created_at, issued, transferred, accounts_with_trustline, accounts_with_payments, payments)
+	_, err = db.Exec(`INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, created_at, issued, transferred, accounts_with_trustline, accounts_with_payments, payments)
 		                   VALUES ($1, $2, $3, $4, $5,
 		                       (SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type='account_debited' AND account=$6),
 		                       (SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type='account_debited' AND account!=$6),
