@@ -144,7 +144,7 @@ func (f *Filter) Defaults() {
 
 func Get(db sql.Database, filter Filter) (effects []Effect, err error) {
 	filter.Defaults()
-	err = sql.Select(db, &effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY created_at`,
+	err = db.Select(&effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY created_at`,
 		filter.From, filter.To)
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] effect.Get(): %s", err)

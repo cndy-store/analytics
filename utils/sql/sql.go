@@ -51,11 +51,6 @@ func OpenAndMigrate(relPath string) (db *sqlx.DB, err error) {
 	return
 }
 
-// Select is a type agnostic wrapper for sqlx.Select() (works with sqlx.DB and sqlx.Tx)
-func Select(db Database, obj interface{}, query string, args ...interface{}) (err error) {
-	return db.Select(obj, query, args...)
-}
-
 // NamedQuery is a type agnostic wrapper for sqlx.NamedQuery() (works with sqlx.DB and sqlx.Tx)
 func NamedQuery(db Database, obj interface{}, query string, arg interface{}) (err error) {
 	var stmt *sqlx.NamedStmt

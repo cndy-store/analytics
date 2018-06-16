@@ -65,7 +65,7 @@ func (f *Filter) Defaults() {
 
 func Get(db sql.Database, filter Filter) (stats []AssetStat, err error) {
 	filter.Defaults()
-	err = sql.Select(db, &stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY id`,
+	err = db.Select(&stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY id`,
 		filter.From, filter.To)
 	if err == sql.ErrNoRows {
 		log.Printf("[ERROR] asset_stat.Get(): %s", err)
