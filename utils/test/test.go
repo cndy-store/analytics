@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/cndy"
+	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/jmoiron/sqlx"
 	"time"
 )
@@ -49,7 +50,7 @@ func InsertTestData(tx *sqlx.Tx) (err error) {
 			return
 		}
 
-		_, err = tx.Exec(`INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, asset_type, asset_issuer, asset_code, created_at)
+		_, err = sql.Exec(tx, `INSERT INTO effects(effect_id, operation, paging_token, account, amount, type, asset_type, asset_issuer, asset_code, created_at)
 			                    VALUES($1, 'https://horizon-testnet.stellar.org/operations/34028708058632193', $2, $3, $4, $5, 'credit_alphanum4', $6, $7, $8)`,
 			fmt.Sprintf("0034028708058632193-%09d", i), data.PagingToken, data.Account, amount, data.Type, cndy.AssetIssuer, cndy.AssetCode, data.CreatedAt)
 		if err != nil {
@@ -57,7 +58,7 @@ func InsertTestData(tx *sqlx.Tx) (err error) {
 		}
 	}
 
-	_, err = tx.Exec(`SELECT repopulate_asset_stats()`)
+	_, err = sql.Exec(tx, `SELECT repopulate_asset_stats()`)
 	if err != nil {
 		return
 	}

@@ -4,13 +4,12 @@ import (
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/models/cursor"
 	"github.com/cndy-store/analytics/utils/filter"
-	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 )
 
-func Init(db sql.Database, router *gin.Engine) {
+func Init(db interface{}, router *gin.Engine) {
 	// GET /stats[?from=XXX&to=XXX]
 	router.GET("/stats", func(c *gin.Context) {
 		from, to, err := filter.Parse(c)
