@@ -3,12 +3,13 @@ package effects
 import (
 	"github.com/cndy-store/analytics/models/effect"
 	"github.com/cndy-store/analytics/utils/filter"
+	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 )
 
-func Init(db interface{}, router *gin.Engine) {
+func Init(db sql.Database, router *gin.Engine) {
 	// GET /effects[?from=XXX&to=XXX]
 	router.GET("/effects", func(c *gin.Context) {
 		from, to, err := filter.Parse(c)

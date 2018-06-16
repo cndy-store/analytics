@@ -18,12 +18,12 @@ func Update(cursor horizon.Cursor) {
 	Current = cursor
 }
 
-func Save(db interface{}) (err error) {
+func Save(db sql.Database) (err error) {
 	_, err = sql.Exec(db, `UPDATE cursors SET paging_token=$1 WHERE id=1`, Current)
 	return
 }
 
-func LoadLatest(db interface{}) (err error) {
+func LoadLatest(db sql.Database) (err error) {
 	var c string
 	err = sql.Get(db, &c, `SELECT paging_token FROM cursors WHERE id=1`)
 	if err != nil {
