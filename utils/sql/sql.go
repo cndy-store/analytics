@@ -51,11 +51,6 @@ func OpenAndMigrate(relPath string) (db *sqlx.DB, err error) {
 	return
 }
 
-// Getis a type agnostic wrapper for sqlx.Get() (works with sqlx.DB and sqlx.Tx)
-func Get(db Database, obj interface{}, query string, args ...interface{}) (err error) {
-	return db.Get(obj, query, args...)
-}
-
 // Select is a type agnostic wrapper for sqlx.Select() (works with sqlx.DB and sqlx.Tx)
 func Select(db Database, obj interface{}, query string, args ...interface{}) (err error) {
 	return db.Select(obj, query, args...)
