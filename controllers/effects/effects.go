@@ -25,11 +25,15 @@ func Init(db sql.Database, router *gin.Engine) {
 		effects, err := effect.Get(db, effect.Filter{From: from, To: to})
 		if err != nil {
 			log.Printf("[ERROR] Couldn't get effect from database: %s", err)
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "error",
+				"message": "Internal server error",
+			})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
+			"status":  "ok",
 			"effects": effects,
 		})
 		return

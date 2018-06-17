@@ -26,12 +26,16 @@ func Init(db sql.Database, router *gin.Engine) {
 		assetStats, err := assetStat.Get(db, assetStat.Filter{From: from, To: to})
 		if err != nil {
 			log.Printf("[ERROR] Couldn't get asset stats from database: %s", err)
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "error",
+				"message": "Internal server error",
+			})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"stats": assetStats,
+			"status": "ok",
+			"stats":  assetStats,
 		})
 		return
 	})
@@ -40,11 +44,15 @@ func Init(db sql.Database, router *gin.Engine) {
 		latest, err := assetStat.Latest(db)
 		if err != nil {
 			log.Printf("[ERROR] Couldn't get asset stats from database: %s", err)
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "error",
+				"message": "Internal server error",
+			})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
 			"latest": latest,
 		})
 		return
@@ -52,6 +60,7 @@ func Init(db sql.Database, router *gin.Engine) {
 
 	router.GET("/stats/cursor", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
+			"status":         "ok",
 			"current_cursor": cursor.Current,
 		})
 		return
