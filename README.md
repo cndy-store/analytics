@@ -57,6 +57,7 @@ GET https://api.cndy.store/stats/latest
 
 ```json
 {
+  "status": "ok",
   "latest": {
     "paging_token": "33825130903777281-1",
     "asset_type": "credit_alphanum4",
@@ -80,6 +81,7 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
 ```json
 {
+  "status": "ok",
   "stats": [
     {
       "paging_token": "33864305300480001-1",
@@ -115,6 +117,7 @@ GET https://api.cndy.store/stats/cursor
 
 ```json
 {
+  "status": "ok",
   "current_cursor": "33877250331906049-1"
 }
 ```
@@ -127,6 +130,7 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
 ```json
 {
+  "status": "ok",
   "effects": [
     {
       "id": "0033819672000335873-0000000001",
