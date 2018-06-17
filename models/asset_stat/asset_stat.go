@@ -4,7 +4,6 @@ import (
 	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
-	"log"
 	"time"
 )
 
@@ -68,7 +67,11 @@ func Get(db sql.Database, filter Filter) (stats []AssetStat, err error) {
 	err = db.Select(&stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY id`,
 		filter.From, filter.To)
 	if err == sql.ErrNoRows {
-		log.Printf("[ERROR] asset_stat.Get(): %s", err)
+		err = nil
+		return
+	}
+	if err != nil {
+		return
 	}
 
 	// Convert int64 fields to strings
@@ -82,7 +85,11 @@ func Get(db sql.Database, filter Filter) (stats []AssetStat, err error) {
 func Latest(db sql.Database) (stats AssetStat, err error) {
 	err = db.Get(&stats, `SELECT * FROM asset_stats ORDER BY id DESC LIMIT 1`)
 	if err == sql.ErrNoRows {
-		log.Printf("[ERROR] asset_stat.Latest(): %s", err)
+		err = nil
+		return
+	}
+	if err != nil {
+		return
 	}
 
 	// Convert int64 fields to strings

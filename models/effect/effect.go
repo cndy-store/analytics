@@ -146,7 +146,11 @@ func Get(db sql.Database, filter Filter) (effects []Effect, err error) {
 	err = db.Select(&effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY created_at`,
 		filter.From, filter.To)
 	if err == sql.ErrNoRows {
-		log.Printf("[ERROR] effect.Get(): %s", err)
+		err = nil
+		return
+	}
+	if err != nil {
+		return
 	}
 
 	// Convert int64 fields to strings
