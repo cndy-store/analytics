@@ -209,18 +209,18 @@ func TestLatestAndCursor(t *testing.T) {
 	}
 	Init(tx, router)
 
-	for _, test := range tests {
-		body := bytes.NewBufferString(test.body)
-		req, _ := http.NewRequest(test.method, test.url, body)
+	for _, tt := range tests {
+		body := bytes.NewBufferString(tt.body)
+		req, _ := http.NewRequest(tt.method, tt.url, body)
 		resp := httptest.NewRecorder()
 
 		router.ServeHTTP(resp, req)
 
-		if resp.Code != test.statusCode {
-			t.Errorf("Expected code %v, got %v, for %+v", test.statusCode, resp.Code, test)
+		if resp.Code != tt.statusCode {
+			t.Errorf("Expected code %v, got %v, for %+v", tt.statusCode, resp.Code, tt)
 		}
 
-		if test.statusCode == http.StatusOK {
+		if tt.statusCode == http.StatusOK {
 			if !strings.Contains(resp.Body.String(), `"status":"ok"`) {
 				t.Errorf("Body did not contain ok status message: %s", resp.Body.String())
 			}
@@ -233,8 +233,8 @@ func TestLatestAndCursor(t *testing.T) {
 			continue
 		}
 
-		if len(test.bodyContains) > 0 {
-			for _, s := range test.bodyContains {
+		if len(tt.bodyContains) > 0 {
+			for _, s := range tt.bodyContains {
 				if !strings.Contains(resp.Body.String(), s) {
 					t.Errorf("Body did not contain '%s' in '%s'", s, resp.Body.String())
 				}

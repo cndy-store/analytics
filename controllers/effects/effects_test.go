@@ -89,15 +89,15 @@ func TestEffects(t *testing.T) {
 	router := gin.Default()
 	Init(tx, router)
 
-	for _, test := range tests {
-		body := bytes.NewBufferString(test.body)
-		req, _ := http.NewRequest(test.method, test.url, body)
+	for _, tt := range tests {
+		body := bytes.NewBufferString(tt.body)
+		req, _ := http.NewRequest(tt.method, tt.url, body)
 		resp := httptest.NewRecorder()
 
 		router.ServeHTTP(resp, req)
 
-		if resp.Code != test.statusCode {
-			t.Errorf("Expected code %v, got %v, for %+v", test.statusCode, resp.Code, test)
+		if resp.Code != tt.statusCode {
+			t.Errorf("Expected code %v, got %v, for %+v", tt.statusCode, resp.Code, tt)
 		}
 
 		type resJson struct {
@@ -105,7 +105,7 @@ func TestEffects(t *testing.T) {
 			Effects []effect.Effect
 		}
 
-		if test.statusCode == http.StatusOK {
+		if tt.statusCode == http.StatusOK {
 			if !strings.Contains(resp.Body.String(), `"status":"ok"`) {
 				t.Errorf("Body did not contain ok status message: %s", resp.Body.String())
 			}
@@ -124,11 +124,11 @@ func TestEffects(t *testing.T) {
 			t.Error(err)
 		}
 
-		if len(res.Effects) != len(test.expectedStats) {
-			t.Errorf("Expected %d JSON elements, got %d", len(test.expectedStats), len(res.Effects))
+		if len(res.Effects) != len(tt.expectedStats) {
+			t.Errorf("Expected %d JSON elements, got %d", len(tt.expectedStats), len(res.Effects))
 		}
 
-		for _, e := range test.expectedStats {
+		for _, e := range tt.expectedStats {
 			var s []string
 			s = append(s, fmt.Sprintf(`"paging_token":"%s"`, e.PagingToken))
 			s = append(s, fmt.Sprintf(`"account":"%s"`, e.Account))
