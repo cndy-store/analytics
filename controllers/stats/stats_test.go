@@ -86,6 +86,15 @@ func TestStats(t *testing.T) {
 			http.StatusOK,
 			test.Effects[3:7],
 		},
+
+		// Invalid Filter{}
+		{
+			"GET",
+			"/stats?from=xxx",
+			"",
+			http.StatusBadRequest,
+			nil,
+		},
 	}
 
 	router := gin.Default()
@@ -102,19 +111,32 @@ func TestStats(t *testing.T) {
 			t.Errorf("Expected code %v, got %v, for %+v", tt.statusCode, resp.Code, tt)
 		}
 
-		stats := make(map[string][]assetStat.AssetStat)
-		err := json.Unmarshal([]byte(resp.Body.String()), &stats)
+		type resJson struct {
+			Status string
+			Stats  []assetStat.AssetStat
+		}
+
+		if tt.statusCode == http.StatusOK {
+			if !strings.Contains(resp.Body.String(), `"status":"ok"`) {
+				t.Errorf("Body did not contain ok status message: %s", resp.Body.String())
+			}
+		} else {
+			if !strings.Contains(resp.Body.String(), `"status":"error"`) {
+				t.Errorf("Body did not contain error status message: %s", resp.Body.String())
+			}
+
+			// Skip to next test
+			continue
+		}
+
+		res := resJson{}
+		err := json.Unmarshal([]byte(resp.Body.String()), &res)
 		if err != nil {
 			t.Error(err)
 		}
 
-		_, ok := stats["stats"]
-		if !ok {
-			t.Error(`Expected element "stats" in JSON response`)
-		}
-
-		if len(stats["stats"]) != len(tt.expectedStats) {
-			t.Errorf("Expected %d JSON elements, got %d", len(tt.expectedStats), len(stats["stats"]))
+		if len(res.Stats) != len(tt.expectedStats) {
+			t.Errorf("Expected %d JSON elements, got %d", len(tt.expectedStats), len(res.Stats))
 		}
 
 		for _, e := range tt.expectedStats {
@@ -158,6 +180,7 @@ func TestLatestAndCursor(t *testing.T) {
 			"",
 			http.StatusOK,
 			[]string{
+				`"status":"ok"`,
 				fmt.Sprintf(`"paging_token":"%s"`, latestEffect.PagingToken),
 				fmt.Sprintf(`"issued":"%s"`, bigint.ToString(latestEffect.Issued)),
 				fmt.Sprintf(`"transferred":"%s"`, bigint.ToString(latestEffect.Transferred)),
@@ -173,6 +196,7 @@ func TestLatestAndCursor(t *testing.T) {
 			"",
 			http.StatusOK,
 			[]string{
+				`"status":"ok"`,
 				fmt.Sprintf(`"current_cursor":"%s"`, cndy.GenesisCursor),
 			},
 		},
@@ -194,6 +218,19 @@ func TestLatestAndCursor(t *testing.T) {
 
 		if resp.Code != test.statusCode {
 			t.Errorf("Expected code %v, got %v, for %+v", test.statusCode, resp.Code, test)
+		}
+
+		if test.statusCode == http.StatusOK {
+			if !strings.Contains(resp.Body.String(), `"status":"ok"`) {
+				t.Errorf("Body did not contain ok status message: %s", resp.Body.String())
+			}
+		} else {
+			if !strings.Contains(resp.Body.String(), `"status":"error"`) {
+				t.Errorf("Body did not contain error status message: %s", resp.Body.String())
+			}
+
+			// Skip to next test
+			continue
 		}
 
 		if len(test.bodyContains) > 0 {

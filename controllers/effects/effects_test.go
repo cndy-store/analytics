@@ -75,6 +75,15 @@ func TestEffects(t *testing.T) {
 			http.StatusOK,
 			test.Effects[3:5],
 		},
+
+		// Invalid Filter{}
+		{
+			"GET",
+			"/effects?from=xxx",
+			"",
+			http.StatusBadRequest,
+			nil,
+		},
 	}
 
 	router := gin.Default()
@@ -91,19 +100,32 @@ func TestEffects(t *testing.T) {
 			t.Errorf("Expected code %v, got %v, for %+v", test.statusCode, resp.Code, test)
 		}
 
-		effects := make(map[string][]effect.Effect)
-		err := json.Unmarshal([]byte(resp.Body.String()), &effects)
+		type resJson struct {
+			Status  string
+			Effects []effect.Effect
+		}
+
+		if test.statusCode == http.StatusOK {
+			if !strings.Contains(resp.Body.String(), `"status":"ok"`) {
+				t.Errorf("Body did not contain ok status message: %s", resp.Body.String())
+			}
+		} else {
+			if !strings.Contains(resp.Body.String(), `"status":"error"`) {
+				t.Errorf("Body did not contain error status message: %s", resp.Body.String())
+			}
+
+			// Skip to next test
+			continue
+		}
+
+		res := resJson{}
+		err := json.Unmarshal([]byte(resp.Body.String()), &res)
 		if err != nil {
 			t.Error(err)
 		}
 
-		_, ok := effects["effects"]
-		if !ok {
-			t.Error(`Expected element "effects" in JSON response`)
-		}
-
-		if len(effects["effects"]) != len(test.expectedStats) {
-			t.Errorf("Expected %d JSON elements, got %d", len(test.expectedStats), len(effects["effects"]))
+		if len(res.Effects) != len(test.expectedStats) {
+			t.Errorf("Expected %d JSON elements, got %d", len(test.expectedStats), len(res.Effects))
 		}
 
 		for _, e := range test.expectedStats {
