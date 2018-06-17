@@ -9,7 +9,7 @@ import (
 )
 
 type AssetStat struct {
-	Id          *uint32 `db:"id",          json:"-"`
+	Id          *uint32 `db:"id"           json:"-"`
 	PagingToken *string `db:"paging_token" json:"paging_token,omitempty"`
 	AssetType   *string `db:"asset_type"   json:"asset_type,omitempty"`
 	AssetCode   *string `db:"asset_code"   json:"asset_code,omitempty"`

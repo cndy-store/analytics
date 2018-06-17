@@ -240,5 +240,10 @@ func TestLatestAndCursor(t *testing.T) {
 				}
 			}
 		}
+
+		// Check whether JSON ID is hidden (regression test)
+		if strings.Contains(resp.Body.String(), `"id":`) || strings.Contains(resp.Body.String(), `"Id":`) {
+			t.Errorf("Body did contain JSON ID (should be excluded) in '%s'", resp.Body.String())
+		}
 	}
 }
