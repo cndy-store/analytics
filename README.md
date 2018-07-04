@@ -179,3 +179,56 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
     }
 }
 ```
+
+
+## Assets
+
+### Create a new asset
+
+POST https://api.cndy.store/assets
+
+Body
+
+```json
+{
+  "code": "CNDY",
+  "issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX"
+}
+```
+
+Response
+
+```json
+{
+  "status": "ok",
+  "asset": {
+    "code": "CNDY",
+    "issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
+    "created_at": "2018-07-04T19:16:47.02965Z"
+  }
+}
+```
+
+### Get all known assets
+
+GET https://api.cndy.store/assets
+
+
+```json
+{
+  "status": "ok",
+  "assets": [
+    {
+      "type": "credit_alphanum4",
+      "code": "CNDY",
+      "issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
+      "created_at": "2018-07-04T19:16:47.02965Z"
+    },
+    {
+      "code": "LOCALCOIN",
+      "issuer": "GCJKCXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "created_at": "2018-07-04T19:54:39.14328Z"
+    }
+  ]
+}
+```
