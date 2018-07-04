@@ -18,7 +18,7 @@ func Init(router *gin.Engine) {
 const htmlData = `
 	<h1 id="api-endpoints-and-examples">API endpoints and examples</h1>
 	<h2 id="latest-stats">Latest stats</h2>
-	<p>GET https://api.cndy.store/stats/latest</p>
+	<p>GET https://api.cndy.store/stats/latest?asset_code=CNDY&amp;asset_issuer=GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX</p>
 	<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="fu">{</span></a>
 	<a class="sourceLine" id="cb1-2" data-line-number="2">  <span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;ok&quot;</span><span class="fu">,</span></a>
 	<a class="sourceLine" id="cb1-3" data-line-number="3">  <span class="dt">&quot;latest&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
@@ -35,7 +35,7 @@ const htmlData = `
 	<a class="sourceLine" id="cb1-14" data-line-number="14">  <span class="fu">}</span></a>
 	<a class="sourceLine" id="cb1-15" data-line-number="15"><span class="fu">}</span></a></code></pre></div>
 	<h2 id="asset-stats-history">Asset stats history</h2>
-	<p>GET https://api.cndy.store/stats[?from=2018-03-03T23:05:40Z&amp;to=2018-03-03T23:05:50Z]</p>
+	<p>GET https://api.cndy.store/stats?asset_code=CNDY&amp;asset_issuer=GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX[&amp;from=2018-03-03T23:05:40Z&amp;to=2018-03-03T23:05:50Z]</p>
 	<p>If not set, <code>from</code> defaults to UNIX timestamp <code>0</code>, <code>to</code> to <code>now</code>.</p>
 	<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="fu">{</span></a>
 	<a class="sourceLine" id="cb2-2" data-line-number="2">  <span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;ok&quot;</span><span class="fu">,</span></a>
@@ -73,7 +73,7 @@ const htmlData = `
 	<a class="sourceLine" id="cb3-3" data-line-number="3">  <span class="dt">&quot;current_cursor&quot;</span><span class="fu">:</span> <span class="st">&quot;33877250331906049-1&quot;</span></a>
 	<a class="sourceLine" id="cb3-4" data-line-number="4"><span class="fu">}</span></a></code></pre></div>
 	<h2 id="effects">Effects</h2>
-	<p>GET https://api.cndy.store/effects[?from=2018-03-03T23:05:40Z&amp;to=2018-03-03T23:05:50Z]</p>
+	<p>GET https://api.cndy.store/effects?asset_code=CNDY&amp;asset_issuer=GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX[&amp;from=2018-03-03T23:05:40Z&amp;to=2018-03-03T23:05:50Z]</p>
 	<p>If not set, <code>from</code> defaults to UNIX timestamp <code>0</code>, <code>to</code> to <code>now</code>.</p>
 	<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="fu">{</span></a>
 	<a class="sourceLine" id="cb4-2" data-line-number="2">  <span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;ok&quot;</span><span class="fu">,</span></a>
