@@ -2,6 +2,7 @@ package assetStat
 
 import (
 	"github.com/cndy-store/analytics/utils/bigint"
+	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
 	"time"
@@ -45,27 +46,10 @@ func New(db sql.Database, effect horizon.Effect, timestamp time.Time) (err error
 	return
 }
 
-type Filter struct {
-	From *time.Time
-	To   *time.Time
-}
-
-func (f *Filter) Defaults() {
-	if f.From == nil {
-		t := time.Unix(0, 0)
-		f.From = &t
-	}
-
-	if f.To == nil {
-		t := time.Now()
-		f.To = &t
-	}
-}
-
-func Get(db sql.Database, filter Filter) (stats []AssetStat, err error) {
+func Get(db sql.Database, filter filter.Filter) (stats []AssetStat, err error) {
 	filter.Defaults()
-	err = db.Select(&stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY id`,
-		filter.From, filter.To)
+	err = db.Select(&stats, `SELECT * FROM asset_stats WHERE asset_code=$1 AND asset_issuer=$2 AND created_at BETWEEN $3::timestamp AND $4::timestamp ORDER BY id`,
+		filter.AssetCode, filter.AssetIssuer, filter.From, filter.To)
 	if err == sql.ErrNoRows {
 		err = nil
 		return
@@ -82,8 +66,10 @@ func Get(db sql.Database, filter Filter) (stats []AssetStat, err error) {
 	return
 }
 
-func Latest(db sql.Database) (stats AssetStat, err error) {
-	err = db.Get(&stats, `SELECT * FROM asset_stats ORDER BY id DESC LIMIT 1`)
+func Latest(db sql.Database, filter filter.Filter) (stats AssetStat, err error) {
+	filter.Defaults()
+	err = db.Get(&stats, `SELECT * FROM asset_stats WHERE asset_code=$1 AND asset_issuer=$2 ORDER BY id DESC LIMIT 1`,
+		filter.AssetCode, filter.AssetIssuer)
 	if err == sql.ErrNoRows {
 		err = nil
 		return

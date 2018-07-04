@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cndy-store/analytics/models/effect"
+	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/cndy-store/analytics/utils/test"
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,7 @@ func TestEffects(t *testing.T) {
 	var tests = []HttpTest{
 		{
 			"GET",
-			"/effects",
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s", cndy.AssetCode, cndy.AssetIssuer),
 			"",
 			http.StatusOK,
 			test.Effects,
@@ -52,7 +53,7 @@ func TestEffects(t *testing.T) {
 		// Filter{From}
 		{
 			"GET",
-			fmt.Sprintf("/effects?from=%s", test.Effects[5].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&from=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[5].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[5:],
@@ -61,7 +62,7 @@ func TestEffects(t *testing.T) {
 		// Filter{To}
 		{
 			"GET",
-			fmt.Sprintf("/effects?to=%s", test.Effects[2].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[2].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[:3],
@@ -70,7 +71,7 @@ func TestEffects(t *testing.T) {
 		// Filter{From, To}
 		{
 			"GET",
-			fmt.Sprintf("/effects?from=%s&to=%s", test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[4].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&from=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[4].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[3:5],
@@ -79,7 +80,16 @@ func TestEffects(t *testing.T) {
 		// Invalid Filter{}
 		{
 			"GET",
-			"/effects?from=xxx",
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&from=xxx", cndy.AssetCode, cndy.AssetIssuer),
+			"",
+			http.StatusBadRequest,
+			nil,
+		},
+
+		// Missing asset_code and asset_issuer
+		{
+			"GET",
+			"/effects",
 			"",
 			http.StatusBadRequest,
 			nil,

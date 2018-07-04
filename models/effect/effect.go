@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/utils/bigint"
+	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
 	"log"
@@ -123,28 +124,10 @@ func New(db sql.Database, effect horizon.Effect) (err error) {
 	return
 }
 
-type Filter struct {
-	Type string
-	From *time.Time
-	To   *time.Time
-}
-
-func (f *Filter) Defaults() {
-	if f.From == nil {
-		t := time.Unix(0, 0)
-		f.From = &t
-	}
-
-	if f.To == nil {
-		t := time.Now()
-		f.To = &t
-	}
-}
-
-func Get(db sql.Database, filter Filter) (effects []Effect, err error) {
+func Get(db sql.Database, filter filter.Filter) (effects []Effect, err error) {
 	filter.Defaults()
-	err = db.Select(&effects, `SELECT * FROM effects WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY created_at`,
-		filter.From, filter.To)
+	err = db.Select(&effects, `SELECT * FROM effects WHERE asset_code=$1 AND asset_issuer=$2 AND created_at BETWEEN $3::timestamp AND $4::timestamp ORDER BY created_at`,
+		filter.AssetCode, filter.AssetIssuer, filter.From, filter.To)
 	if err == sql.ErrNoRows {
 		err = nil
 		return
