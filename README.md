@@ -53,7 +53,7 @@ docker run -v $PWD:/host --entrypoint cp cndy-store/analytics analytics /host/cn
 
 ## Latest stats
 
-GET https://api.cndy.store/stats/latest
+GET https://api.cndy.store/stats/latest?asset_code=CNDY&asset_issuer=GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX
 
 ```json
 {
@@ -75,7 +75,7 @@ GET https://api.cndy.store/stats/latest
 
 ## Asset stats history
 
-GET https://api.cndy.store/stats[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
+GET https://api.cndy.store/stats?asset_code=CNDY&asset_issuer=GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX[&from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
 
 If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
@@ -124,7 +124,8 @@ GET https://api.cndy.store/stats/cursor
 
 ## Effects
 
-GET https://api.cndy.store/effects[?from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
+GET https://api.cndy.store/effects?asset_code=CNDY&asset_issuer=GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX[&from=2018-03-03T23:05:40Z&to=2018-03-03T23:05:50Z]
+
 
 If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
@@ -176,5 +177,58 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
       "balance": "0.0000000",
       "balance_limit": "0.0000000"
     }
+}
+```
+
+
+## Assets
+
+### Create a new asset
+
+POST https://api.cndy.store/assets
+
+Body
+
+```json
+{
+  "code": "CNDY",
+  "issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX"
+}
+```
+
+Response
+
+```json
+{
+  "status": "ok",
+  "asset": {
+    "code": "CNDY",
+    "issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
+    "created_at": "2018-07-04T19:16:47.02965Z"
+  }
+}
+```
+
+### Get all known assets
+
+GET https://api.cndy.store/assets
+
+
+```json
+{
+  "status": "ok",
+  "assets": [
+    {
+      "type": "credit_alphanum4",
+      "code": "CNDY",
+      "issuer": "GCJKC2MI63KSQ6MLE6GBSXPDKTDAK43WR522ZYR3F34NPM7Z5UEPIZNX",
+      "created_at": "2018-07-04T19:16:47.02965Z"
+    },
+    {
+      "code": "LOCALCOIN",
+      "issuer": "GCJKCXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "created_at": "2018-07-04T19:54:39.14328Z"
+    }
+  ]
 }
 ```

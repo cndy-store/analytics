@@ -4,6 +4,7 @@ import (
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/cndy"
+	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/cndy-store/analytics/utils/test"
 	"github.com/stellar/go/clients/horizon"
@@ -70,7 +71,7 @@ func TestNew(t *testing.T) {
 		t.Error(err)
 	}
 
-	effects, err := Get(tx, Filter{})
+	effects, err := Get(tx, filter.NewCNDYFilter(nil, nil))
 	if err != nil {
 		t.Error(err)
 	}
@@ -130,7 +131,7 @@ func TestNew(t *testing.T) {
 	}
 
 	// Check whether asset_stat data was updated
-	a, err := assetStat.Latest(tx)
+	a, err := assetStat.Latest(tx, filter.NewCNDYFilter(nil, nil))
 	if err != nil {
 		t.Error(err)
 	}
@@ -175,8 +176,8 @@ func TestGet(t *testing.T) {
 		t.Error(err)
 	}
 
-	// Filter{}
-	effects, err := Get(tx, Filter{})
+	// NewCNDYFilter(nil, nil)
+	effects, err := Get(tx, filter.NewCNDYFilter(nil, nil))
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
@@ -185,7 +186,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{From}
-	effects, err = Get(tx, Filter{From: &test.Effects[5].CreatedAt})
+	effects, err = Get(tx, filter.NewCNDYFilter(&test.Effects[5].CreatedAt, nil))
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
@@ -201,7 +202,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{To}
-	effects, err = Get(tx, Filter{To: &test.Effects[2].CreatedAt})
+	effects, err = Get(tx, filter.NewCNDYFilter(nil, &test.Effects[2].CreatedAt))
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
@@ -217,7 +218,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{From, To}
-	effects, err = Get(tx, Filter{From: &test.Effects[3].CreatedAt, To: &test.Effects[4].CreatedAt})
+	effects, err = Get(tx, filter.NewCNDYFilter(&test.Effects[3].CreatedAt, &test.Effects[4].CreatedAt))
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
@@ -226,7 +227,6 @@ func TestGet(t *testing.T) {
 	}
 
 	for i, e := range test.Effects[3:5] {
-
 		if e.PagingToken != *effects[i].PagingToken {
 			t.Errorf("Expected paging_token to be %s got: %s", e.PagingToken, *effects[i].PagingToken)
 		}

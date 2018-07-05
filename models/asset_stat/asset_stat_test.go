@@ -1,6 +1,7 @@
 package assetStat
 
 import (
+	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/cndy-store/analytics/utils/test"
 	"testing"
@@ -24,7 +25,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{}
-	assetStats, err := Get(tx, Filter{})
+	assetStats, err := Get(tx, filter.NewCNDYFilter(nil, nil))
 	if err != nil {
 		t.Errorf("assetStat.Get(): %s", err)
 	}
@@ -33,7 +34,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{From}
-	assetStats, err = Get(tx, Filter{From: &test.Effects[2].CreatedAt})
+	assetStats, err = Get(tx, filter.NewCNDYFilter(&test.Effects[2].CreatedAt, nil))
 	if err != nil {
 		t.Errorf("assetStat.Get(): %s", err)
 	}
@@ -64,7 +65,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{To}
-	assetStats, err = Get(tx, Filter{To: &test.Effects[1].CreatedAt})
+	assetStats, err = Get(tx, filter.NewCNDYFilter(nil, &test.Effects[1].CreatedAt))
 	if err != nil {
 		t.Errorf("assetStat.Get(): %s", err)
 	}
@@ -95,7 +96,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{From, To}
-	assetStats, err = Get(tx, Filter{From: &test.Effects[1].CreatedAt, To: &test.Effects[2].CreatedAt})
+	assetStats, err = Get(tx, filter.NewCNDYFilter(&test.Effects[1].CreatedAt, &test.Effects[2].CreatedAt))
 	if err != nil {
 		t.Errorf("assetStat.Get(): %s", err)
 	}
@@ -144,7 +145,7 @@ func TestLatest(t *testing.T) {
 	}
 
 	// Filter{}
-	assetStats, err := Latest(tx)
+	assetStats, err := Latest(tx, filter.NewCNDYFilter(nil, nil))
 	if err != nil {
 		t.Errorf("assetStat.Latest(): %s", err)
 	}

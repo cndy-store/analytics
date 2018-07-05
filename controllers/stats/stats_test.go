@@ -54,7 +54,7 @@ func TestStats(t *testing.T) {
 	var tests = []HttpTestWithEffects{
 		{
 			"GET",
-			"/stats",
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s", cndy.AssetCode, cndy.AssetIssuer),
 			"",
 			http.StatusOK,
 			test.Effects,
@@ -63,7 +63,7 @@ func TestStats(t *testing.T) {
 		// Filter{From}
 		{
 			"GET",
-			fmt.Sprintf("/stats?from=%s", test.Effects[4].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&from=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[4].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[4:],
@@ -72,7 +72,7 @@ func TestStats(t *testing.T) {
 		// Filter{To}
 		{
 			"GET",
-			fmt.Sprintf("/stats?to=%s", test.Effects[2].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[2].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[:3],
@@ -81,7 +81,7 @@ func TestStats(t *testing.T) {
 		// Filter{From, To}
 		{
 			"GET",
-			fmt.Sprintf("/stats?from=%s&to=%s", test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[6].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&from=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[6].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[3:7],
@@ -90,7 +90,16 @@ func TestStats(t *testing.T) {
 		// Invalid Filter{}
 		{
 			"GET",
-			"/stats?from=xxx",
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&from=xxx", cndy.AssetCode, cndy.AssetIssuer),
+			"",
+			http.StatusBadRequest,
+			nil,
+		},
+
+		// Missing asset_code and asset_issuer
+		{
+			"GET",
+			"/stats",
 			"",
 			http.StatusBadRequest,
 			nil,
@@ -176,7 +185,7 @@ func TestLatestAndCursor(t *testing.T) {
 	var tests = []HttpTest{
 		{
 			"GET",
-			"/stats/latest",
+			fmt.Sprintf("/stats/latest?asset_code=%s&asset_issuer=%s", cndy.AssetCode, cndy.AssetIssuer),
 			"",
 			http.StatusOK,
 			[]string{
@@ -188,6 +197,15 @@ func TestLatestAndCursor(t *testing.T) {
 				fmt.Sprintf(`"accounts_with_payments":%d`, latestEffect.AccountsWithPayments),
 				fmt.Sprintf(`"payments":%d`, latestEffect.Payments),
 			},
+		},
+
+		// Missing asset_code and asset_issuer
+		{
+			"GET",
+			"/stats/latest",
+			"",
+			http.StatusBadRequest,
+			nil,
 		},
 
 		{

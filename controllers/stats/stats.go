@@ -13,7 +13,7 @@ import (
 func Init(db sql.Database, router *gin.Engine) {
 	// GET /stats[?from=XXX&to=XXX]
 	router.GET("/stats", func(c *gin.Context) {
-		from, to, err := filter.Parse(c)
+		args, err := filter.Parse(c)
 		if err != nil {
 			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -23,7 +23,7 @@ func Init(db sql.Database, router *gin.Engine) {
 			return
 		}
 
-		assetStats, err := assetStat.Get(db, assetStat.Filter{From: from, To: to})
+		assetStats, err := assetStat.Get(db, args)
 		if err != nil {
 			log.Printf("[ERROR] Couldn't get asset stats from database: %s", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -41,7 +41,17 @@ func Init(db sql.Database, router *gin.Engine) {
 	})
 
 	router.GET("/stats/latest", func(c *gin.Context) {
-		latest, err := assetStat.Latest(db)
+		args, err := filter.Parse(c)
+		if err != nil {
+			log.Printf("[ERROR] Couldn't parse URL parameters: %s", err)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  "error",
+				"message": err.Error(),
+			})
+			return
+		}
+
+		latest, err := assetStat.Latest(db, args)
 		if err != nil {
 			log.Printf("[ERROR] Couldn't get asset stats from database: %s", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
