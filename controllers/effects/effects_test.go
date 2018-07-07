@@ -135,7 +135,7 @@ func TestEffects(t *testing.T) {
 		}
 
 		if len(res.Effects) != len(tt.expectedStats) {
-			t.Errorf("Expected %d JSON elements, got %d", len(tt.expectedStats), len(res.Effects))
+			t.Errorf("%s %s: Expected %d JSON elements, got %d", tt.method, tt.url, len(tt.expectedStats), len(res.Effects))
 		}
 
 		for _, e := range tt.expectedStats {
