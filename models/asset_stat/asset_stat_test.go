@@ -29,20 +29,20 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		t.Errorf("assetStat.Get(): %s", err)
 	}
-	if len(test.Effects) != len(assetStats) {
-		t.Errorf("Expected %d assetStats got %d", len(test.Effects), len(assetStats))
+	if len(test.CNDYEffects) != len(assetStats) {
+		t.Errorf("Expected %d assetStats got %d", len(test.CNDYEffects), len(assetStats))
 	}
 
 	// Filter{From}
-	assetStats, err = Get(tx, filter.NewCNDYFilter(&test.Effects[2].CreatedAt, nil))
+	assetStats, err = Get(tx, filter.NewCNDYFilter(&test.CNDYEffects[2].CreatedAt, nil))
 	if err != nil {
 		t.Errorf("assetStat.Get(): %s", err)
 	}
-	if len(test.Effects[2:]) != len(assetStats) {
-		t.Errorf("Expected %d assetStats got %d", len(test.Effects[2:]), len(assetStats))
+	if len(test.CNDYEffects[2:]) != len(assetStats) {
+		t.Errorf("Expected %d assetStats got %d", len(test.CNDYEffects[2:]), len(assetStats))
 	}
 
-	for i, e := range test.Effects[2:] {
+	for i, e := range test.CNDYEffects[2:] {
 		if e.Issued != *assetStats[i].Issued {
 			t.Errorf("Expected %d got: %d", e.Issued, *assetStats[i].Issued)
 		}
@@ -65,15 +65,15 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{To}
-	assetStats, err = Get(tx, filter.NewCNDYFilter(nil, &test.Effects[1].CreatedAt))
+	assetStats, err = Get(tx, filter.NewCNDYFilter(nil, &test.CNDYEffects[1].CreatedAt))
 	if err != nil {
 		t.Errorf("assetStat.Get(): %s", err)
 	}
-	if len(test.Effects[:2]) != len(assetStats) {
-		t.Errorf("Expected %d assetStats got %d", len(test.Effects[:2]), len(assetStats))
+	if len(test.CNDYEffects[:2]) != len(assetStats) {
+		t.Errorf("Expected %d assetStats got %d", len(test.CNDYEffects[:2]), len(assetStats))
 	}
 
-	for i, e := range test.Effects[:2] {
+	for i, e := range test.CNDYEffects[:2] {
 		if e.Issued != *assetStats[i].Issued {
 			t.Errorf("Expected %d got: %d", e.Issued, *assetStats[i].Issued)
 		}
@@ -96,15 +96,15 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{From, To}
-	assetStats, err = Get(tx, filter.NewCNDYFilter(&test.Effects[1].CreatedAt, &test.Effects[2].CreatedAt))
+	assetStats, err = Get(tx, filter.NewCNDYFilter(&test.CNDYEffects[1].CreatedAt, &test.CNDYEffects[2].CreatedAt))
 	if err != nil {
 		t.Errorf("assetStat.Get(): %s", err)
 	}
-	if len(test.Effects[1:3]) != len(assetStats) {
-		t.Errorf("Expected %d assetStats got %d", len(test.Effects[1:3]), len(assetStats))
+	if len(test.CNDYEffects[1:3]) != len(assetStats) {
+		t.Errorf("Expected %d assetStats got %d", len(test.CNDYEffects[1:3]), len(assetStats))
 	}
 
-	for i, e := range test.Effects[1:3] {
+	for i, e := range test.CNDYEffects[1:3] {
 		if e.Issued != *assetStats[i].Issued {
 			t.Errorf("Expected %d got: %d", e.Issued, *assetStats[i].Issued)
 		}
@@ -150,8 +150,8 @@ func TestLatest(t *testing.T) {
 		t.Errorf("assetStat.Latest(): %s", err)
 	}
 
-	// Compare to latest test.Effects[]
-	lastEffect := test.Effects[len(test.Effects)-1]
+	// Compare to latest test.CNDYEffects[]
+	lastEffect := test.CNDYEffects[len(test.CNDYEffects)-1]
 
 	if lastEffect.Issued != *assetStats.Issued {
 		t.Errorf("Expected %d got: %d", lastEffect.Issued, *assetStats.Issued)

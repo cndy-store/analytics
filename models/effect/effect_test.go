@@ -181,20 +181,20 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
-	if len(test.Effects) != len(effects) {
-		t.Errorf("Expected %d effects got %d", len(test.Effects), len(effects))
+	if len(test.CNDYEffects) != len(effects) {
+		t.Errorf("Expected %d effects got %d", len(test.CNDYEffects), len(effects))
 	}
 
 	// Filter{From}
-	effects, err = Get(tx, filter.NewCNDYFilter(&test.Effects[5].CreatedAt, nil))
+	effects, err = Get(tx, filter.NewCNDYFilter(&test.CNDYEffects[5].CreatedAt, nil))
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
-	if len(test.Effects[5:]) != len(effects) {
-		t.Errorf("Expected %d effects got %d", len(test.Effects), len(effects))
+	if len(test.CNDYEffects[5:]) != len(effects) {
+		t.Errorf("Expected %d effects got %d", len(test.CNDYEffects), len(effects))
 	}
 
-	for i, e := range test.Effects[5:] {
+	for i, e := range test.CNDYEffects[5:] {
 
 		if e.PagingToken != *effects[i].PagingToken {
 			t.Errorf("Expected paging_token to be %s got: %s", e.PagingToken, *effects[i].PagingToken)
@@ -202,15 +202,15 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{To}
-	effects, err = Get(tx, filter.NewCNDYFilter(nil, &test.Effects[2].CreatedAt))
+	effects, err = Get(tx, filter.NewCNDYFilter(nil, &test.CNDYEffects[2].CreatedAt))
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
-	if len(test.Effects[:3]) != len(effects) {
-		t.Errorf("Expected %d effects got %d", len(test.Effects[:3]), len(effects))
+	if len(test.CNDYEffects[:3]) != len(effects) {
+		t.Errorf("Expected %d effects got %d", len(test.CNDYEffects[:3]), len(effects))
 	}
 
-	for i, e := range test.Effects[:3] {
+	for i, e := range test.CNDYEffects[:3] {
 
 		if e.PagingToken != *effects[i].PagingToken {
 			t.Errorf("Expected paging_token to be %s got: %s", e.PagingToken, *effects[i].PagingToken)
@@ -218,15 +218,15 @@ func TestGet(t *testing.T) {
 	}
 
 	// Filter{From, To}
-	effects, err = Get(tx, filter.NewCNDYFilter(&test.Effects[3].CreatedAt, &test.Effects[4].CreatedAt))
+	effects, err = Get(tx, filter.NewCNDYFilter(&test.CNDYEffects[3].CreatedAt, &test.CNDYEffects[4].CreatedAt))
 	if err != nil {
 		t.Errorf("effect.Get(): %s", err)
 	}
-	if len(test.Effects[3:5]) != len(effects) {
-		t.Errorf("Expected %d effects got %d", len(test.Effects[3:5]), len(effects))
+	if len(test.CNDYEffects[3:5]) != len(effects) {
+		t.Errorf("Expected %d effects got %d", len(test.CNDYEffects[3:5]), len(effects))
 	}
 
-	for i, e := range test.Effects[3:5] {
+	for i, e := range test.CNDYEffects[3:5] {
 		if e.PagingToken != *effects[i].PagingToken {
 			t.Errorf("Expected paging_token to be %s got: %s", e.PagingToken, *effects[i].PagingToken)
 		}
