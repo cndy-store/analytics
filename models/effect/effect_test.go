@@ -149,13 +149,13 @@ func TestNew(t *testing.T) {
 		t.Errorf("Expected %v got %v", asset.Issuer, *a.AssetIssuer)
 	}
 	if *e.CreatedAt != *a.CreatedAt {
-		t.Errorf("Expected %v got %v", e.CreatedAt, *a.CreatedAt)
+		t.Errorf("Expected %v got %v", *e.CreatedAt, *a.CreatedAt)
 	}
 
 	// We've used an account_debited type from the asset issuer
 	// This should increase the total available supply
 	if *e.Amount != *a.Issued {
-		t.Errorf("Expected %v got %v", e.Amount, *a.Issued)
+		t.Errorf("Expected %v got %v", *e.Amount, *a.Issued)
 	}
 }
 
