@@ -57,35 +57,53 @@ func TestStats(t *testing.T) {
 			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s", cndy.AssetCode, cndy.AssetIssuer),
 			"",
 			http.StatusOK,
-			test.Effects,
+			test.CNDYEffects,
 		},
 
 		// Filter{From}
 		{
 			"GET",
-			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&from=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[4].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&from=%s", cndy.AssetCode, cndy.AssetIssuer, test.CNDYEffects[4].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
-			test.Effects[4:],
+			test.CNDYEffects[4:],
 		},
 
 		// Filter{To}
 		{
 			"GET",
-			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[2].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.CNDYEffects[2].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
-			test.Effects[:3],
+			test.CNDYEffects[:3],
 		},
 
 		// Filter{From, To}
 		{
 			"GET",
-			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&from=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[6].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&from=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.CNDYEffects[3].CreatedAt.Format(time.RFC3339), test.CNDYEffects[6].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
-			test.Effects[3:7],
+			test.CNDYEffects[3:7],
 		},
+
+		// Check second asset
+		{
+			"GET",
+			fmt.Sprintf("/stats?asset_code=TEST&asset_issuer=GCJKCXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"),
+			"",
+			http.StatusOK,
+			test.TESTEffects,
+		},
+
+		// Check whether an empty asset returns empty results
+		// {
+		// 	"GET",
+		// 	fmt.Sprintf("/stats?asset_code=TEST&asset_issuer=UNTRACKED"),
+		// 	"",
+		// 	http.StatusOK,
+		// 	nil,
+		// },
 
 		// Invalid Filter{}
 		{
@@ -145,7 +163,7 @@ func TestStats(t *testing.T) {
 		}
 
 		if len(res.Stats) != len(tt.expectedStats) {
-			t.Errorf("Expected %d JSON elements, got %d", len(tt.expectedStats), len(res.Stats))
+			t.Errorf("%s %s: Expected %d JSON elements, got %d", tt.method, tt.url, len(tt.expectedStats), len(res.Stats))
 		}
 
 		for _, e := range tt.expectedStats {
@@ -181,8 +199,11 @@ func TestLatestAndCursor(t *testing.T) {
 	// Insert test data
 	test.InsertTestData(tx)
 
-	latestEffect := test.Effects[len(test.Effects)-1]
+	latestCNDYEffect := test.CNDYEffects[len(test.CNDYEffects)-1]
+	latestTESTEffect := test.TESTEffects[len(test.TESTEffects)-1]
+
 	var tests = []HttpTest{
+		// Check CNDY stats
 		{
 			"GET",
 			fmt.Sprintf("/stats/latest?asset_code=%s&asset_issuer=%s", cndy.AssetCode, cndy.AssetIssuer),
@@ -190,12 +211,29 @@ func TestLatestAndCursor(t *testing.T) {
 			http.StatusOK,
 			[]string{
 				`"status":"ok"`,
-				fmt.Sprintf(`"paging_token":"%s"`, latestEffect.PagingToken),
-				fmt.Sprintf(`"issued":"%s"`, bigint.ToString(latestEffect.Issued)),
-				fmt.Sprintf(`"transferred":"%s"`, bigint.ToString(latestEffect.Transferred)),
-				fmt.Sprintf(`"accounts_with_trustline":%d`, latestEffect.AccountsWithTrustline),
-				fmt.Sprintf(`"accounts_with_payments":%d`, latestEffect.AccountsWithPayments),
-				fmt.Sprintf(`"payments":%d`, latestEffect.Payments),
+				fmt.Sprintf(`"paging_token":"%s"`, latestCNDYEffect.PagingToken),
+				fmt.Sprintf(`"issued":"%s"`, bigint.ToString(latestCNDYEffect.Issued)),
+				fmt.Sprintf(`"transferred":"%s"`, bigint.ToString(latestCNDYEffect.Transferred)),
+				fmt.Sprintf(`"accounts_with_trustline":%d`, latestCNDYEffect.AccountsWithTrustline),
+				fmt.Sprintf(`"accounts_with_payments":%d`, latestCNDYEffect.AccountsWithPayments),
+				fmt.Sprintf(`"payments":%d`, latestCNDYEffect.Payments),
+			},
+		},
+
+		// Check second asset
+		{
+			"GET",
+			fmt.Sprintf("/stats/latest?asset_code=TEST&asset_issuer=GCJKCXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"),
+			"",
+			http.StatusOK,
+			[]string{
+				`"status":"ok"`,
+				fmt.Sprintf(`"paging_token":"%s"`, latestTESTEffect.PagingToken),
+				fmt.Sprintf(`"issued":"%s"`, bigint.ToString(latestTESTEffect.Issued)),
+				fmt.Sprintf(`"transferred":"%s"`, bigint.ToString(latestTESTEffect.Transferred)),
+				fmt.Sprintf(`"accounts_with_trustline":%d`, latestTESTEffect.AccountsWithTrustline),
+				fmt.Sprintf(`"accounts_with_payments":%d`, latestTESTEffect.AccountsWithPayments),
+				fmt.Sprintf(`"payments":%d`, latestTESTEffect.Payments),
 			},
 		},
 
@@ -207,6 +245,15 @@ func TestLatestAndCursor(t *testing.T) {
 			http.StatusBadRequest,
 			nil,
 		},
+
+		// Untracked asset
+		// {
+		// 	"GET",
+		// 	"/stats/latest?asset_code=TEST&asset_issuer=UNTRACKED",
+		// 	"",
+		// 	http.StatusBadRequest,
+		// 	nil,
+		// },
 
 		{
 			"GET",

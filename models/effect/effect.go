@@ -81,23 +81,23 @@ func New(db sql.Database, effect horizon.Effect) (err error) {
 	}
 
 	_, err = db.Exec(`INSERT INTO effects(
-			effect_id,
-			operation, succeeds, precedes,
-			paging_token, account, amount, type, type_i, starting_balance,
-			balance, balance_limit,
-			asset_type, asset_issuer, asset_code,
-			signer_public_key, signer_weight, signer_key, signer_type,
-			created_at
-		)
-		VALUES(
-			$1,
-			$2, $3, $4,
-			$5, $6, $7, $8, $9, $10,
-			$11, $12,
-			$13, $14, $15,
-			$16, $17, $18, $19,
-			$20
-		)`,
+			              effect_id,
+			              operation, succeeds, precedes,
+			              paging_token, account, amount, type, type_i, starting_balance,
+			              balance, balance_limit,
+			              asset_type, asset_issuer, asset_code,
+			              signer_public_key, signer_weight, signer_key, signer_type,
+			              created_at
+		              )
+		              VALUES(
+			              $1,
+			              $2, $3, $4,
+			              $5, $6, $7, $8, $9, $10,
+			              $11, $12,
+			              $13, $14, $15,
+			              $16, $17, $18, $19,
+			              $20
+		              )`,
 		effect.ID,
 		effect.Links.Operation.Href, effect.Links.Succeeds.Href, effect.Links.Precedes.Href,
 		effect.PT, effect.Account, parsedAmount, effect.Type, effect.TypeI, effect.StartingBalance,
@@ -126,7 +126,11 @@ func New(db sql.Database, effect horizon.Effect) (err error) {
 
 func Get(db sql.Database, filter filter.Filter) (effects []Effect, err error) {
 	filter.Defaults()
-	err = db.Select(&effects, `SELECT * FROM effects WHERE asset_code=$1 AND asset_issuer=$2 AND created_at BETWEEN $3::timestamp AND $4::timestamp ORDER BY created_at`,
+	err = db.Select(&effects, `SELECT * FROM effects
+		                       WHERE asset_code=$1
+							   AND asset_issuer=$2
+							   AND created_at BETWEEN $3::timestamp
+							   AND $4::timestamp ORDER BY created_at`,
 		filter.AssetCode, filter.AssetIssuer, filter.From, filter.To)
 	if err == sql.ErrNoRows {
 		err = nil

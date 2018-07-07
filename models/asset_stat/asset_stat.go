@@ -33,16 +33,37 @@ func New(db sql.Database, effect horizon.Effect, timestamp time.Time) (err error
 	// Store amount_transfered and amount_issued upon insert in a different table
 	// (analogue to the asset endpoint of Horizon)
 
+	// This INSERT statement is closely related to the repopulate_asset_stats() procedure
+	// See database migrations for reference
 	_, err = db.Exec(`INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, created_at, issued, transferred, accounts_with_trustline, accounts_with_payments, payments)
-		                   VALUES ($1, $2, $3, $4, $5,
-		                       (SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type='account_debited' AND account=$6),
-		                       (SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type='account_debited' AND account!=$6),
-		                       (SELECT COUNT(DISTINCT account) FROM effects WHERE type='trustline_created' AND account!=$6),
-		                       (SELECT COUNT(DISTINCT account) FROM effects WHERE type='account_debited' AND account!=$6),
-		                       (SELECT COUNT(*) FROM effects WHERE type='account_debited' AND account!=$6)
+		                  VALUES ($1, $2, $3, $4, $5,
+		                      (SELECT COALESCE(SUM(amount), 0) FROM effects
+						       WHERE type='account_debited'
+							       AND account=$6
+							       AND asset_code=$7
+							       AND asset_issuer=$6),
+		                      (SELECT COALESCE(SUM(amount), 0) FROM effects
+						       WHERE type='account_debited'
+							       AND account!=$6
+							       AND asset_code=$7
+							       AND asset_issuer=$6),
+		                      (SELECT COUNT(DISTINCT account) FROM effects
+						       WHERE type='trustline_created'
+							       AND account!=$6
+							       AND asset_code=$7
+							       AND asset_issuer=$6),
+		                      (SELECT COUNT(DISTINCT account) FROM effects
+						       WHERE type='account_debited'
+							       AND account!=$6
+							       AND asset_code=$7
+							       AND asset_issuer=$6),
+		                      (SELECT COUNT(*) FROM effects
+						       WHERE type='account_debited'
+							       AND account!=$6
+							       AND asset_code=$7
+							       AND asset_issuer=$6)
 		                   )`,
-		effect.PT, effect.Asset.Code, effect.Asset.Issuer, effect.Asset.Type, timestamp, effect.Asset.Issuer)
-
+		effect.PT, effect.Asset.Code, effect.Asset.Issuer, effect.Asset.Type, timestamp, effect.Asset.Issuer, effect.Asset.Code)
 	return
 }
 

@@ -47,34 +47,34 @@ func TestEffects(t *testing.T) {
 			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s", cndy.AssetCode, cndy.AssetIssuer),
 			"",
 			http.StatusOK,
-			test.Effects,
+			test.CNDYEffects,
 		},
 
 		// Filter{From}
 		{
 			"GET",
-			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&from=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[5].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&from=%s", cndy.AssetCode, cndy.AssetIssuer, test.CNDYEffects[5].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
-			test.Effects[5:],
+			test.CNDYEffects[5:],
 		},
 
 		// Filter{To}
 		{
 			"GET",
-			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[2].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.CNDYEffects[2].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
-			test.Effects[:3],
+			test.CNDYEffects[:3],
 		},
 
 		// Filter{From, To}
 		{
 			"GET",
-			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&from=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[4].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&from=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.CNDYEffects[3].CreatedAt.Format(time.RFC3339), test.CNDYEffects[4].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
-			test.Effects[3:5],
+			test.CNDYEffects[3:5],
 		},
 
 		// Invalid Filter{}
@@ -85,6 +85,15 @@ func TestEffects(t *testing.T) {
 			http.StatusBadRequest,
 			nil,
 		},
+
+		// Untracked asset
+		// {
+		// 	"GET",
+		// 	fmt.Sprintf("/effects?asset_code=TEST&asset_issuer=UNTRACKED"),
+		// 	"",
+		// 	http.StatusOK,
+		// 	nil,
+		// },
 
 		// Missing asset_code and asset_issuer
 		{
@@ -135,7 +144,7 @@ func TestEffects(t *testing.T) {
 		}
 
 		if len(res.Effects) != len(tt.expectedStats) {
-			t.Errorf("Expected %d JSON elements, got %d", len(tt.expectedStats), len(res.Effects))
+			t.Errorf("%s %s: Expected %d JSON elements, got %d", tt.method, tt.url, len(tt.expectedStats), len(res.Effects))
 		}
 
 		for _, e := range tt.expectedStats {
