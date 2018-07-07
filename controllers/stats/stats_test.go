@@ -54,7 +54,7 @@ func TestStats(t *testing.T) {
 	var tests = []HttpTestWithEffects{
 		{
 			"GET",
-			"/stats",
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s", cndy.AssetCode, cndy.AssetIssuer),
 			"",
 			http.StatusOK,
 			test.Effects,
@@ -63,7 +63,7 @@ func TestStats(t *testing.T) {
 		// Filter{From}
 		{
 			"GET",
-			fmt.Sprintf("/stats?from=%s", test.Effects[4].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&from=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[4].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[4:],
@@ -72,7 +72,7 @@ func TestStats(t *testing.T) {
 		// Filter{To}
 		{
 			"GET",
-			fmt.Sprintf("/stats?to=%s", test.Effects[2].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[2].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[:3],
@@ -81,10 +81,28 @@ func TestStats(t *testing.T) {
 		// Filter{From, To}
 		{
 			"GET",
-			fmt.Sprintf("/stats?from=%s&to=%s", test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[6].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&from=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[6].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[3:7],
+		},
+
+		// Invalid Filter{}
+		{
+			"GET",
+			fmt.Sprintf("/stats?asset_code=%s&asset_issuer=%s&from=xxx", cndy.AssetCode, cndy.AssetIssuer),
+			"",
+			http.StatusBadRequest,
+			nil,
+		},
+
+		// Missing asset_code and asset_issuer
+		{
+			"GET",
+			"/stats",
+			"",
+			http.StatusBadRequest,
+			nil,
 		},
 	}
 
@@ -102,19 +120,32 @@ func TestStats(t *testing.T) {
 			t.Errorf("Expected code %v, got %v, for %+v", tt.statusCode, resp.Code, tt)
 		}
 
-		stats := make(map[string][]assetStat.AssetStat)
-		err := json.Unmarshal([]byte(resp.Body.String()), &stats)
+		type resJson struct {
+			Status string
+			Stats  []assetStat.AssetStat
+		}
+
+		if tt.statusCode == http.StatusOK {
+			if !strings.Contains(resp.Body.String(), `"status":"ok"`) {
+				t.Errorf("Body did not contain ok status message: %s", resp.Body.String())
+			}
+		} else {
+			if !strings.Contains(resp.Body.String(), `"status":"error"`) {
+				t.Errorf("Body did not contain error status message: %s", resp.Body.String())
+			}
+
+			// Skip to next test
+			continue
+		}
+
+		res := resJson{}
+		err := json.Unmarshal([]byte(resp.Body.String()), &res)
 		if err != nil {
 			t.Error(err)
 		}
 
-		_, ok := stats["stats"]
-		if !ok {
-			t.Error(`Expected element "stats" in JSON response`)
-		}
-
-		if len(stats["stats"]) != len(tt.expectedStats) {
-			t.Errorf("Expected %d JSON elements, got %d", len(tt.expectedStats), len(stats["stats"]))
+		if len(res.Stats) != len(tt.expectedStats) {
+			t.Errorf("Expected %d JSON elements, got %d", len(tt.expectedStats), len(res.Stats))
 		}
 
 		for _, e := range tt.expectedStats {
@@ -154,10 +185,11 @@ func TestLatestAndCursor(t *testing.T) {
 	var tests = []HttpTest{
 		{
 			"GET",
-			"/stats/latest",
+			fmt.Sprintf("/stats/latest?asset_code=%s&asset_issuer=%s", cndy.AssetCode, cndy.AssetIssuer),
 			"",
 			http.StatusOK,
 			[]string{
+				`"status":"ok"`,
 				fmt.Sprintf(`"paging_token":"%s"`, latestEffect.PagingToken),
 				fmt.Sprintf(`"issued":"%s"`, bigint.ToString(latestEffect.Issued)),
 				fmt.Sprintf(`"transferred":"%s"`, bigint.ToString(latestEffect.Transferred)),
@@ -167,12 +199,22 @@ func TestLatestAndCursor(t *testing.T) {
 			},
 		},
 
+		// Missing asset_code and asset_issuer
+		{
+			"GET",
+			"/stats/latest",
+			"",
+			http.StatusBadRequest,
+			nil,
+		},
+
 		{
 			"GET",
 			"/stats/cursor",
 			"",
 			http.StatusOK,
 			[]string{
+				`"status":"ok"`,
 				fmt.Sprintf(`"current_cursor":"%s"`, cndy.GenesisCursor),
 			},
 		},
@@ -185,23 +227,41 @@ func TestLatestAndCursor(t *testing.T) {
 	}
 	Init(tx, router)
 
-	for _, test := range tests {
-		body := bytes.NewBufferString(test.body)
-		req, _ := http.NewRequest(test.method, test.url, body)
+	for _, tt := range tests {
+		body := bytes.NewBufferString(tt.body)
+		req, _ := http.NewRequest(tt.method, tt.url, body)
 		resp := httptest.NewRecorder()
 
 		router.ServeHTTP(resp, req)
 
-		if resp.Code != test.statusCode {
-			t.Errorf("Expected code %v, got %v, for %+v", test.statusCode, resp.Code, test)
+		if resp.Code != tt.statusCode {
+			t.Errorf("Expected code %v, got %v, for %+v", tt.statusCode, resp.Code, tt)
 		}
 
-		if len(test.bodyContains) > 0 {
-			for _, s := range test.bodyContains {
+		if tt.statusCode == http.StatusOK {
+			if !strings.Contains(resp.Body.String(), `"status":"ok"`) {
+				t.Errorf("Body did not contain ok status message: %s", resp.Body.String())
+			}
+		} else {
+			if !strings.Contains(resp.Body.String(), `"status":"error"`) {
+				t.Errorf("Body did not contain error status message: %s", resp.Body.String())
+			}
+
+			// Skip to next test
+			continue
+		}
+
+		if len(tt.bodyContains) > 0 {
+			for _, s := range tt.bodyContains {
 				if !strings.Contains(resp.Body.String(), s) {
 					t.Errorf("Body did not contain '%s' in '%s'", s, resp.Body.String())
 				}
 			}
+		}
+
+		// Check whether JSON ID is hidden (regression test)
+		if strings.Contains(resp.Body.String(), `"id":`) || strings.Contains(resp.Body.String(), `"Id":`) {
+			t.Errorf("Body did contain JSON ID (should be excluded) in '%s'", resp.Body.String())
 		}
 	}
 }

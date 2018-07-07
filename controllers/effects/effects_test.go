@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cndy-store/analytics/models/effect"
+	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/cndy-store/analytics/utils/test"
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,7 @@ func TestEffects(t *testing.T) {
 	var tests = []HttpTest{
 		{
 			"GET",
-			"/effects",
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s", cndy.AssetCode, cndy.AssetIssuer),
 			"",
 			http.StatusOK,
 			test.Effects,
@@ -52,7 +53,7 @@ func TestEffects(t *testing.T) {
 		// Filter{From}
 		{
 			"GET",
-			fmt.Sprintf("/effects?from=%s", test.Effects[5].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&from=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[5].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[5:],
@@ -61,7 +62,7 @@ func TestEffects(t *testing.T) {
 		// Filter{To}
 		{
 			"GET",
-			fmt.Sprintf("/effects?to=%s", test.Effects[2].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[2].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[:3],
@@ -70,43 +71,74 @@ func TestEffects(t *testing.T) {
 		// Filter{From, To}
 		{
 			"GET",
-			fmt.Sprintf("/effects?from=%s&to=%s", test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[4].CreatedAt.Format(time.RFC3339)),
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&from=%s&to=%s", cndy.AssetCode, cndy.AssetIssuer, test.Effects[3].CreatedAt.Format(time.RFC3339), test.Effects[4].CreatedAt.Format(time.RFC3339)),
 			"",
 			http.StatusOK,
 			test.Effects[3:5],
+		},
+
+		// Invalid Filter{}
+		{
+			"GET",
+			fmt.Sprintf("/effects?asset_code=%s&asset_issuer=%s&from=xxx", cndy.AssetCode, cndy.AssetIssuer),
+			"",
+			http.StatusBadRequest,
+			nil,
+		},
+
+		// Missing asset_code and asset_issuer
+		{
+			"GET",
+			"/effects",
+			"",
+			http.StatusBadRequest,
+			nil,
 		},
 	}
 
 	router := gin.Default()
 	Init(tx, router)
 
-	for _, test := range tests {
-		body := bytes.NewBufferString(test.body)
-		req, _ := http.NewRequest(test.method, test.url, body)
+	for _, tt := range tests {
+		body := bytes.NewBufferString(tt.body)
+		req, _ := http.NewRequest(tt.method, tt.url, body)
 		resp := httptest.NewRecorder()
 
 		router.ServeHTTP(resp, req)
 
-		if resp.Code != test.statusCode {
-			t.Errorf("Expected code %v, got %v, for %+v", test.statusCode, resp.Code, test)
+		if resp.Code != tt.statusCode {
+			t.Errorf("Expected code %v, got %v, for %+v", tt.statusCode, resp.Code, tt)
 		}
 
-		effects := make(map[string][]effect.Effect)
-		err := json.Unmarshal([]byte(resp.Body.String()), &effects)
+		type resJson struct {
+			Status  string
+			Effects []effect.Effect
+		}
+
+		if tt.statusCode == http.StatusOK {
+			if !strings.Contains(resp.Body.String(), `"status":"ok"`) {
+				t.Errorf("Body did not contain ok status message: %s", resp.Body.String())
+			}
+		} else {
+			if !strings.Contains(resp.Body.String(), `"status":"error"`) {
+				t.Errorf("Body did not contain error status message: %s", resp.Body.String())
+			}
+
+			// Skip to next test
+			continue
+		}
+
+		res := resJson{}
+		err := json.Unmarshal([]byte(resp.Body.String()), &res)
 		if err != nil {
 			t.Error(err)
 		}
 
-		_, ok := effects["effects"]
-		if !ok {
-			t.Error(`Expected element "effects" in JSON response`)
+		if len(res.Effects) != len(tt.expectedStats) {
+			t.Errorf("Expected %d JSON elements, got %d", len(tt.expectedStats), len(res.Effects))
 		}
 
-		if len(effects["effects"]) != len(test.expectedStats) {
-			t.Errorf("Expected %d JSON elements, got %d", len(test.expectedStats), len(effects["effects"]))
-		}
-
-		for _, e := range test.expectedStats {
+		for _, e := range tt.expectedStats {
 			var s []string
 			s = append(s, fmt.Sprintf(`"paging_token":"%s"`, e.PagingToken))
 			s = append(s, fmt.Sprintf(`"account":"%s"`, e.Account))

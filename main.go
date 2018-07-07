@@ -1,12 +1,13 @@
 package main
 
 import (
+	"github.com/cndy-store/analytics/controllers/assets"
 	"github.com/cndy-store/analytics/controllers/docs"
 	"github.com/cndy-store/analytics/controllers/effects"
 	"github.com/cndy-store/analytics/controllers/stats"
+	"github.com/cndy-store/analytics/models/asset"
 	"github.com/cndy-store/analytics/models/cursor"
 	"github.com/cndy-store/analytics/models/effect"
-	"github.com/cndy-store/analytics/utils/cndy"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -63,18 +64,28 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Load registered assets into asset.Registered
+	asset.UpdateRegistered(db)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't get registered assets from database: %s", err)
+		os.Exit(1)
+	}
+
 	for {
 		client.StreamEffects(ctx, &cursor.Current, func(e horizon.Effect) {
-			if e.Asset.Code == cndy.AssetCode && e.Asset.Issuer == cndy.AssetIssuer {
-				err = effect.New(db, e)
-				if err != nil {
-					log.Printf("[ERROR] Couldn't save effect to database: %s", err)
-				}
+			// Check whether this asset was registered
+			for _, registeredAsset := range asset.Registered {
+				if e.Asset.Code == *registeredAsset.Code && e.Asset.Issuer == *registeredAsset.Issuer {
+					err = effect.New(db, e)
+					if err != nil {
+						log.Printf("[ERROR] Couldn't save effect to database: %s", err)
+					}
 
-				// Make sure to also safe the current cursor, so database is consistent
-				err = cursor.Save(db)
-				if err != nil {
-					log.Printf("[ERROR] Couldn't save cursor to database: %s", err)
+					// Make sure to also safe the current cursor, so database is consistent
+					err = cursor.Save(db)
+					if err != nil {
+						log.Printf("[ERROR] Couldn't save cursor to database: %s", err)
+					}
 				}
 			}
 
@@ -87,8 +98,9 @@ func api(db *sqlx.DB) {
 	router := gin.Default()
 	router.Use(cors.Default()) // Allow all origins
 
-	stats.Init(db, router)
+	assets.Init(db, router)
 	effects.Init(db, router)
+	stats.Init(db, router)
 	docs.Init(router)
 
 	router.Run(":3144")

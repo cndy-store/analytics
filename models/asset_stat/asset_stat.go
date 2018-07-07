@@ -2,14 +2,13 @@ package assetStat
 
 import (
 	"github.com/cndy-store/analytics/utils/bigint"
+	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
-	"github.com/stellar/go/clients/horizon"
-	"log"
 	"time"
 )
 
 type AssetStat struct {
-	Id          *uint32 `db:"id",          json:"-"`
+	EffectId    *string `db:"effect_id",   json:"effect_id"` // TODO: omitempty, also add to tests?
 	PagingToken *string `db:"paging_token" json:"paging_token,omitempty"`
 	AssetType   *string `db:"asset_type"   json:"asset_type,omitempty"`
 	AssetCode   *string `db:"asset_code"   json:"asset_code,omitempty"`
@@ -29,23 +28,6 @@ type AssetStat struct {
 	JsonTransferred *string `db:"-" json:"transferred"`
 }
 
-func New(db interface{}, effect horizon.Effect, timestamp time.Time) (err error) {
-	// Store amount_transfered and amount_issued upon insert in a different table
-	// (analogue to the asset endpoint of Horizon)
-
-	_, err = sql.Exec(db, `INSERT INTO asset_stats(paging_token, asset_code, asset_issuer, asset_type, created_at, issued, transferred, accounts_with_trustline, accounts_with_payments, payments)
-		                   VALUES ($1, $2, $3, $4, $5,
-		                       (SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type='account_debited' AND account=$6),
-		                       (SELECT COALESCE(SUM(amount), 0) FROM effects WHERE type='account_debited' AND account!=$6),
-		                       (SELECT COUNT(DISTINCT account) FROM effects WHERE type='trustline_created' AND account!=$6),
-		                       (SELECT COUNT(DISTINCT account) FROM effects WHERE type='account_debited' AND account!=$6),
-		                       (SELECT COUNT(*) FROM effects WHERE type='account_debited' AND account!=$6)
-		                   )`,
-		effect.PT, effect.Asset.Code, effect.Asset.Issuer, effect.Asset.Type, timestamp, effect.Asset.Issuer)
-
-	return
-}
-
 type Filter struct {
 	From *time.Time
 	To   *time.Time
@@ -63,12 +45,16 @@ func (f *Filter) Defaults() {
 	}
 }
 
-func Get(db interface{}, filter Filter) (stats []AssetStat, err error) {
+func Get(db sql.Database, filter filter.Filter) (stats []AssetStat, err error) {
 	filter.Defaults()
-	err = sql.Select(db, &stats, `SELECT * FROM asset_stats WHERE created_at BETWEEN $1::timestamp AND $2::timestamp ORDER BY id`,
-		filter.From, filter.To)
+	err = db.Select(&stats, `SELECT * FROM asset_stats($1, $2) WHERE created_at BETWEEN $3::timestamp AND $4::timestamp ORDER BY effect_id`,
+		filter.AssetCode, filter.AssetIssuer, filter.From, filter.To)
 	if err == sql.ErrNoRows {
-		log.Printf("[ERROR] asset_stat.Get(): %s", err)
+		err = nil
+		return
+	}
+	if err != nil {
+		return
 	}
 
 	// Convert int64 fields to strings
@@ -79,10 +65,16 @@ func Get(db interface{}, filter Filter) (stats []AssetStat, err error) {
 	return
 }
 
-func Latest(db interface{}) (stats AssetStat, err error) {
-	err = sql.Get(db, &stats, `SELECT * FROM asset_stats ORDER BY id DESC LIMIT 1`)
+func Latest(db sql.Database, filter filter.Filter) (stats AssetStat, err error) {
+	filter.Defaults()
+	err = db.Get(&stats, `SELECT * FROM asset_stats($1, $2) ORDER BY effect_id DESC LIMIT 1`,
+		filter.AssetCode, filter.AssetIssuer)
 	if err == sql.ErrNoRows {
-		log.Printf("[ERROR] asset_stat.Latest(): %s", err)
+		err = nil
+		return
+	}
+	if err != nil {
+		return
 	}
 
 	// Convert int64 fields to strings
