@@ -1,14 +1,13 @@
 package effect
 
 import (
-	"encoding/json"
 	"github.com/cndy-store/analytics/models/asset_stat"
 	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
 	"log"
-	"net/http"
+	"strings"
 	"time"
 )
 
@@ -44,15 +43,20 @@ type Effect struct {
 	JsonBalanceLimit *string `db:"-" json:"balance_limit,omitempty"`
 }
 
-type Operation struct {
-	From      string    `json:"from"`
-	To        string    `json:"to"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 func New(db sql.Database, effect horizon.Effect) (err error) {
-	// Get operation
-	operation := getOperation(effect.Links.Operation.Href)
+	// Get operation to retrieve created_at timestamp
+	client := horizon.DefaultTestNetClient
+	s := strings.Split(effect.Links.Operation.Href, "/")
+	operationId := s[len(s)-1] // Get last element
+	operation, err := client.LoadOperation(operationId)
+	if err != nil {
+		return
+	}
+
+	createdAt, err := time.Parse(time.RFC3339, operation.CreatedAt)
+	if err != nil {
+		return
+	}
 
 	// Check whether sender and receiver are the same in account_credited and account_debited
 	// operations. If so, ignore this effect.
@@ -104,13 +108,13 @@ func New(db sql.Database, effect horizon.Effect) (err error) {
 		parsedBalance, parsedBalanceLimit,
 		effect.Asset.Type, effect.Asset.Issuer, effect.Asset.Code,
 		effect.Signer.PublicKey, effect.Signer.Weight, effect.Signer.Key, effect.Signer.Type,
-		operation.CreatedAt)
+		createdAt)
 	if err != nil {
 		return
 	}
 
 	// Store asset stats upon insert in a different table
-	err = assetStat.New(db, effect, operation.CreatedAt)
+	err = assetStat.New(db, effect, createdAt)
 	if err != nil {
 		return
 	}
@@ -120,7 +124,7 @@ func New(db sql.Database, effect horizon.Effect) (err error) {
 	log.Printf("  +->  Type:      %s", effect.Type)
 	log.Printf("  +->  Account:   %s", effect.Account)
 	log.Printf("  +->  Amount:    %s", effect.Amount)
-	log.Printf("  +->  Timestamp: %s\n\n", operation.CreatedAt)
+	log.Printf("  +->  Timestamp: %s\n\n", createdAt)
 	return
 }
 
@@ -164,23 +168,4 @@ func (e *Effect) Convert() {
 		balanceLimit := bigint.ToString(*e.BalanceLimit)
 		e.JsonBalanceLimit = &balanceLimit
 	}
-}
-
-func getOperation(url string) (op Operation) {
-	var h = &http.Client{Timeout: 2 * time.Second}
-
-	r, err := h.Get(url)
-	if err != nil {
-		log.Printf("[ERROR] effect.getOperationTime() HTTP request 'GET %s'", url)
-		log.Printf("        %s", err)
-		return
-	}
-	defer r.Body.Close()
-
-	err = json.NewDecoder(r.Body).Decode(&op)
-	if err != nil {
-		log.Printf("[ERROR] effect.getOperationTime(): Couldn't decode JSON body: %s", err)
-		return
-	}
-	return
 }
