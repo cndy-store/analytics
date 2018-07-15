@@ -1,5 +1,5 @@
 hash: 7dc1526bc69405c0f56f59d7be92a398a6ffb50eab39320072dad78909e82fb6
-updated: 2018-05-24T11:33:56.759094+02:00
+updated: 2018-07-15T14:10:55.966648+02:00
 imports:
 - name: github.com/agl/ed25519
   version: 278e1ec8e8a6e017cd07577924d6766039146ced
@@ -24,7 +24,7 @@ imports:
   version: a41850380601eeb43f4350f7d17c6bbd8944aaf8
   repo: https://github.com/go-errors/errors
 - name: github.com/golang-migrate/migrate
-  version: 22f249514de9aa3f8a720a7cabbdd45d294f83a1
+  version: bcd996f3df28363f43e2d0935484c4559537a3eb
   subpackages:
   - database
   - database/postgres
@@ -69,7 +69,7 @@ imports:
   subpackages:
   - hooks/test
 - name: github.com/stellar/go
-  version: 011f109ca8a98d59fc55fa51107623c65db3d3db
+  version: fa04bae12c1af0dee6d524e7c0ada779602421bb
   repo: https://github.com/chr4/go-stellar-sdk
   subpackages:
   - amount
@@ -80,11 +80,15 @@ imports:
   - keypair
   - network
   - price
+  - protocols/horizon
+  - protocols/horizon/base
   - strkey
   - support/errors
   - support/http/mutil
   - support/log
+  - support/render/hal
   - support/render/problem
+  - support/url
   - xdr
 - name: github.com/stretchr/objx
   version: 1a9d0bb9f541897e62256577b352fdbc1fb4fd94
