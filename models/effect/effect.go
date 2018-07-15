@@ -6,6 +6,7 @@ import (
 	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/stellar/go/clients/horizon"
+	hProtocol "github.com/stellar/go/protocols/horizon"
 	"log"
 	"strings"
 	"time"
@@ -43,7 +44,7 @@ type Effect struct {
 	JsonBalanceLimit *string `db:"-" json:"balance_limit,omitempty"`
 }
 
-func New(db sql.Database, effect horizon.Effect) (err error) {
+func New(db sql.Database, effect hProtocol.Effect) (err error) {
 	// Get operation to retrieve created_at timestamp
 	client := horizon.DefaultTestNetClient
 	s := strings.Split(effect.Links.Operation.Href, "/")

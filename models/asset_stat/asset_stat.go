@@ -4,7 +4,7 @@ import (
 	"github.com/cndy-store/analytics/utils/bigint"
 	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
-	"github.com/stellar/go/clients/horizon"
+	hProtocol "github.com/stellar/go/protocols/horizon"
 	"time"
 )
 
@@ -29,7 +29,7 @@ type AssetStat struct {
 	JsonTransferred *string `db:"-" json:"transferred"`
 }
 
-func New(db sql.Database, effect horizon.Effect, timestamp time.Time) (err error) {
+func New(db sql.Database, effect hProtocol.Effect, timestamp time.Time) (err error) {
 	// Store amount_transfered and amount_issued upon insert in a different table
 	// (analogue to the asset endpoint of Horizon)
 

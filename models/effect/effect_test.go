@@ -7,7 +7,9 @@ import (
 	"github.com/cndy-store/analytics/utils/filter"
 	"github.com/cndy-store/analytics/utils/sql"
 	"github.com/cndy-store/analytics/utils/test"
-	"github.com/stellar/go/clients/horizon"
+	hProtocol "github.com/stellar/go/protocols/horizon"
+	"github.com/stellar/go/protocols/horizon/base"
+	"github.com/stellar/go/support/render/hal"
 	"testing"
 )
 
@@ -24,42 +26,42 @@ func TestNew(t *testing.T) {
 	defer tx.Rollback()
 
 	// Construct effect to insert
-	operation := horizon.Link{
+	operation := hal.Link{
 		Href:      "https://horizon-testnet.stellar.org/operations/33820436504518657",
 		Templated: false,
 	}
-	succeeds := horizon.Link{
+	succeeds := hal.Link{
 		Href:      "https://horizon-testnet.stellar.org/effects?order=desc&cursor=33820436504518657-1",
 		Templated: false,
 	}
-	precedes := horizon.Link{
+	precedes := hal.Link{
 		Href:      "https://horizon-testnet.stellar.org/effects?order=asc&cursor=33820436504518657-1",
 		Templated: false,
 	}
 
-	asset := horizon.Asset{
+	asset := base.Asset{
 		Type:   "credit_alphanum4",
 		Code:   cndy.AssetCode,
 		Issuer: cndy.AssetIssuer,
 	}
 
 	type links struct {
-		Operation horizon.Link
-		Succeeds  horizon.Link
-		Precedes  horizon.Link
+		Operation hal.Link
+		Succeeds  hal.Link
+		Precedes  hal.Link
 	}
 
 	// We need an account_debited effect from the issuer, so total_amount is not nil for the
 	// asset stats tests later
-	effect := horizon.Effect{
+	effect := hProtocol.Effect{
 		ID:      "0033820436504518657-0000000001",
 		PT:      "33820436504518657-1",
 		Account: cndy.AssetIssuer,
 		Amount:  "5.0000000",
 		Type:    "account_debited",
 		TypeI:   2,
-		Balance: horizon.Balance{Asset: asset},
-		Signer:  horizon.Signer{},
+		Balance: hProtocol.Balance{Asset: asset},
+		Signer:  hProtocol.Signer{},
 	}
 	effect.Links.Operation = operation
 	effect.Links.Succeeds = succeeds

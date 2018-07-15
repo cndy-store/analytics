@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/stellar/go/clients/horizon"
+	hProtocol "github.com/stellar/go/protocols/horizon"
 	"golang.org/x/net/context"
 	"log"
 	"os"
@@ -72,7 +73,7 @@ func main() {
 	}
 
 	for {
-		client.StreamEffects(ctx, &cursor.Current, func(e horizon.Effect) {
+		client.StreamEffects(ctx, &cursor.Current, func(e hProtocol.Effect) {
 			// Check whether this asset was registered
 			for _, registeredAsset := range asset.Registered {
 				if e.Asset.Code == *registeredAsset.Code && e.Asset.Issuer == *registeredAsset.Issuer {
