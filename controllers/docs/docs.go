@@ -125,6 +125,7 @@ const htmlData = `
 	<a class="sourceLine" id="cb4-48" data-line-number="48"><span class="er">}</span></a></code></pre></div>
 	<h2 id="assets">Assets</h2>
 	<h3 id="create-a-new-asset">Create a new asset</h3>
+	<p><em>NOTE: This endpoint is currently disabled.</em></p>
 	<p>POST https://api.cndy.store/assets</p>
 	<p>Body</p>
 	<div class="sourceCode" id="cb5"><pre class="sourceCode json"><code class="sourceCode json"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="fu">{</span></a>

@@ -185,6 +185,8 @@ If not set, `from` defaults to UNIX timestamp `0`, `to` to `now`.
 
 ### Create a new asset
 
+*NOTE: This endpoint is currently disabled.*
+
 POST https://api.cndy.store/assets
 
 Body
